@@ -1,8 +1,10 @@
+#import <Foundation/Foundation.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include "NSTask.h" // in ~/theos/include/NSTask.h
 
 #define SPRINGBOARD_PORT 6000
 #define equal(a, b) strcmp(a, b) == 0
@@ -107,8 +109,34 @@ int executeCommand()
         return 0;
     }
     NSLog(@"com.zjx.zxtouchb: command to run: %@", [NSString stringWithFormat:@"%@", parameterArr[2]] );
+
+    @autoreleasepool {
+        NSTask *task = [[NSTask alloc] init];
+
+        // 设置执行的命令和参数
+        [task setLaunchPath:@"/bin/sh"];
+        [task setArguments:@[@"-c", [NSString stringWithFormat:@"%@", parameterArr[2]]]];
+
+        // 设置输出管道，如果需要获取命令的输出
+        NSPipe *pipe = [NSPipe pipe];
+        [task setStandardOutput:pipe];
+
+        // 启动任务
+        [task launch];
+
+        // 等待任务完成
+        [task waitUntilExit];
+
+        // 如果需要获取命令的输出，可以使用以下代码
+        NSFileHandle *fileHandle = [pipe fileHandleForReading];
+        NSData *data = [fileHandle readDataToEndOfFile];
+        NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSLog(@"Command Output:\n%@", output);
+    }
+
+    return 0;
     
-    return system([[NSString stringWithFormat:@"%@", parameterArr[2]] UTF8String]);
+    //return system([[NSString stringWithFormat:@"%@", parameterArr[2]] UTF8String]);
 }
 
 

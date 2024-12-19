@@ -1,6 +1,8 @@
 #ifndef DEVICE_INFO_H
 #define DEVICE_INFO_H
-#endif
+
+#import <Foundation/Foundation.h>
+
 
 #define DEVICE_INFO_TASK_GET_SCREEN_SIZE 1
 #define DEVICE_INFO_TASK_GET_SCREEN_ORIENTATION 2
@@ -14,3 +16,5 @@
 
 
 NSString *getDeviceInfoFromRawData(UInt8* eventData, NSError **error);
+
+#endif

@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
-#endif
+
+#import <Foundation/Foundation.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -15,3 +16,4 @@ static void readStream(CFReadStreamRef readStream, CFStreamEventType eventype, v
 static void TCPServerAcceptCallBack(CFSocketRef socket, CFSocketCallBackType type, CFDataRef address, const void *data, void *info);
 int notifyClient(UInt8* msg, CFWriteStreamRef client);
 
+#endif

@@ -1,6 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
+#import <Foundation/Foundation.h>
 
 #define TASK_PERFORM_TOUCH 10
 #define TASK_PROCESS_BRING_FOREGROUND 11

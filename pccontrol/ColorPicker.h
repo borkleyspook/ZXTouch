@@ -1,6 +1,8 @@
 #ifndef COLOR_PICKER_H
 #define COLOR_PICKER_H
-#endif
+
+#import <UIKit/UIKit.h>
+
 
 #ifdef __cplusplus
 #undef NO
@@ -19,3 +21,5 @@ NSString* searchRGBFromRawData(UInt8 *eventData, NSError **error);
 + (NSDictionary *)colorAtPositionFromCGImage:(CGImageRef)img x:(int)x andY:(int)y;
 
 @end
+
+#endif

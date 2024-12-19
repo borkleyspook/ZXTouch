@@ -71,7 +71,7 @@ using namespace std;
     CGContextRelease(contextRef);
     CGColorSpaceRelease(colorSpace);
     
-    Mat templ = imread([templatePath UTF8String], CV_LOAD_IMAGE_GRAYSCALE); //[templatePath UTF8String]
+    Mat templ = imread([templatePath UTF8String], IMREAD_GRAYSCALE); //[templatePath UTF8String]
     if (templ.cols == 0 && templ.rows == 0)
     {
         *err = [NSError errorWithDomain:@"com.zjx.zxtouchsp" code:999 userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"-1;;Read failed! Check permission or file existance. The height and width of the template image is 0! Template path: %@\r\n", templatePath]}];
@@ -84,8 +84,8 @@ using namespace std;
 }
 
 - (CGRect)templateMatchWithPath:(NSString*)imgPath templatePath:(NSString*)templatePath error:(NSError**)err {
-    Mat image = imread([imgPath UTF8String], CV_LOAD_IMAGE_GRAYSCALE); //[imgPath UTF8String]
-    Mat templ = imread([templatePath UTF8String], CV_LOAD_IMAGE_GRAYSCALE); //[templatePath UTF8String]
+    Mat image = imread([imgPath UTF8String], IMREAD_GRAYSCALE); //[imgPath UTF8String]
+    Mat templ = imread([templatePath UTF8String], IMREAD_GRAYSCALE); //[templatePath UTF8String]
     
     if (image.cols == 0 && image.rows == 0)
     {

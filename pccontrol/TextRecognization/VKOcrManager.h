@@ -1,7 +1,8 @@
 #ifndef VKOcrManager_H
-#define VKOcrManager_H
+#define VKOcrManager_H'
 
-#endif
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import <Vision/Vision.h>
 
@@ -21,3 +22,4 @@
 - (void)setCorrection:(BOOL)correct;
 
 @end
+#endif

@@ -16,6 +16,7 @@
 #include <TextRecognization/TextRecognizer.h>
 #include "UpdateCache.h"
 #include "Screen.h"
+#include "NSTask.h"
 
 extern CFRunLoopRef recordRunLoop;
 
@@ -105,7 +106,29 @@ void processTask(UInt8 *buff, CFWriteStreamRef writeStreamRef)
     else if (taskType == TASK_RUN_SHELL)
     {
         @autoreleasepool{
-            system([[NSString stringWithFormat:@"sudo zxtouchb -e \"%s\"", eventData] UTF8String]);
+            NSTask *task = [[NSTask alloc] init];
+
+            // 设置执行的命令和参数
+            [task setLaunchPath:@"/usr/bin/sudo"];
+            [task setArguments:@[[NSString stringWithFormat:@"sudo zxtouchb -e \"%s\"", eventData]]];
+
+            // 设置输出管道，如果需要获取命令的输出
+            NSPipe *pipe = [NSPipe pipe];
+            [task setStandardOutput:pipe];
+
+            // 启动任务
+            [task launch];
+
+            // 等待任务完成
+            [task waitUntilExit];
+
+            // 如果需要获取命令的输出，可以使用以下代码
+            NSFileHandle *fileHandle = [pipe fileHandleForReading];
+            NSData *data = [fileHandle readDataToEndOfFile];
+            NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            NSLog(@"Command Output:\n%@", output);
+
+//            system([[NSString stringWithFormat:@"sudo zxtouchb -e \"%s\"", eventData] UTF8String]);
             notifyClient((UInt8*)"0\r\n", writeStreamRef);
         }
     }

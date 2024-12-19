@@ -1,7 +1,7 @@
 #ifndef SCRIPT_PLAYER_H
 #define SCRIPT_PLAYER_H
 
-#endif
+#import <Foundation/Foundation.h>
 
 @interface ScriptPlayer : NSObject
 
@@ -20,3 +20,5 @@
 - (NSString*)getCurrentBundlePath;
 
 @end
+
+#endif

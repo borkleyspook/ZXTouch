@@ -7,6 +7,7 @@
 #include <sys/xattr.h>
 #include <substrate.h>
 #include <math.h>
+#include <dlfcn.h>
 
 #include <mach/mach.h>
 #import <CoreGraphics/CoreGraphics.h>
@@ -361,7 +362,7 @@ Boolean init()
         //NSLog(@"com.zjx.springboard: Visit %@ in your web browser", _webServer.serverURL);
 
         //system("sudo zxtouchb -e \"chown -R mobile:mobile /var/mobile/Documents/com.zjx.zxtouchsp\"");
-        system("sudo zxtouchb -e \"chown -R mobile:mobile /var/mobile/Library/ZXTouch\"");
+        //system("sudo zxtouchb -e \"chown -R mobile:mobile /var/mobile/Library/ZXTouch\"");
 
         socketServer();
     });

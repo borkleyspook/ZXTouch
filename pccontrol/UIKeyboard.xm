@@ -1,6 +1,8 @@
 #include "UIKeyboard.h"
 #import <Foundation/NSDistributedNotificationCenter.h>
 
+#include "UIPasteboard.h"
+
 #define TASK_GET_TEXT_FROM_CLIPBOARD 6
 #define TASK_SAVE_TEXT_TO_CLIPBOARD 7
 

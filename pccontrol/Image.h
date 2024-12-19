@@ -1,6 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
-#endif
+
+#import <Foundation/Foundation.h>
 
 #ifdef __cplusplus
 #undef NO
@@ -19,3 +20,5 @@ using namespace std;
 
 
 @end
+
+#endif
