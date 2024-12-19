@@ -1,4 +1,34 @@
-# IOS13-SimulateTouch V0.0.6
+# IOS13-SimulateTouch V0.0.8
+
+## Why building for V0.0.8 ?
+
+There all several commits after v0.0.7 release, which haven't been compiled for years.
+
+This new version:
+
+1. Merge all pending pull requests in original repo.
+2. **Fix UTF-8 text input issues.**
+3. Set up a portable building environment.
+4. The minimal iOS version has increased to 14.0
+
+## Steps to build
+
+Simply grab the deb package in **release** page if you don't want to struggle with the compiler :)
+
+0. prerequisite: of course install your favourite versions of python, theos and xcode in your mac
+1. git clone https://github.com/opencv/opencv (4.x branch) into somewhere
+2. build it with ```python platforms/ios/build_framework.py ios --iphoneos_archs "arm64,arm64e" --iphoneos_deployment_target "14.0" --disable-bitcode --static --build_only_specified_archs --legacy_build```
+3. git clone https://github.com/mnihyc/ZXTouch into somewhere, create a directory inside named frameworks
+4. copy generated opencv/ios/opencv2.framework exactly to ZXTouch/frameworks/opencv2.framework
+5. run ```make package FINALPACKAGE=1``` and find your deb in packages folder
+
+If would like to build for iOS < 14.0, switch to a compatible Xcode version, and replace the target in Makefile with 11.0 or something.
+
+## Special thanks for reference
+
+https://github.com/dounine/SimulateTouch
+
+## === Original Content ===
 
 A **system wide** touch event simulation library for iOS 11.0 - 14.
 
