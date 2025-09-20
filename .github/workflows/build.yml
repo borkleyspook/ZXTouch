@@ -14,9 +14,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
       
-    - name: Checkout OpenCV
-      run: |
-        git clone --branch 4.x --depth 1 https://github.com/opencv/opencv.git opencv-repo
+   # - name: Checkout OpenCV
+   #   run: |
+   #     git clone --branch 4.x --depth 1 https://github.com/opencv/opencv.git opencv-repo
         
     - name: Install Dependencies
       run: |
