@@ -5,6 +5,7 @@
 #include <string.h>
 #import <dlfcn.h> // For dlopen/dlsym
 #import <rootless.h> // For rootless awareness if needed
+#import <libhooker.h> // Libhooker header
 
 // since the tweak is injected to the applications, it should be hidden in case of unexpected behaviors
 static char *(*dyld_get_image_name_old)(uint32_t index);
