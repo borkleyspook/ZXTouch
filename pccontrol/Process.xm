@@ -2,7 +2,7 @@
 #include "Common.h"
 int (*openApp)(CFStringRef, Boolean);
 
-static void* sbServices = dlopen("/System/Library/PrivateFrameworks/SpringBoardServices.framework/SpringBoardServices", RTLD_LAZY);
+static void* sbServices = NULL;
 
 int switchProcessForegroundFromRawData(UInt8 *eventData)
 {
@@ -11,13 +11,30 @@ int switchProcessForegroundFromRawData(UInt8 *eventData)
 
 int bringAppForeground(NSString *appIdentifier)
 {
+    // Lazy load SpringBoardServices framework
+    if (!sbServices) {
+        sbServices = dlopen("/System/Library/PrivateFrameworks/SpringBoardServices.framework/SpringBoardServices", RTLD_LAZY);
+        if (!sbServices) {
+            NSLog(@"### com.zjx.springboard: Failed to load SpringBoardServices framework");
+            return -1;
+        }
+    }
+    
     CFStringRef appBundleName = CFStringCreateWithFormat(NULL, NULL, CFSTR("%@"), appIdentifier);
-    //[NSString stringWithFormat:@"%s", eventData];
     NSLog(@"### com.zjx.springboard: Switch to application: %@", appBundleName);
-    if (!openApp)
+    
+    if (!openApp) {
         openApp = (int(*)(CFStringRef, Boolean))dlsym(sbServices,"SBSLaunchApplicationWithIdentifier");
+        if (!openApp) {
+            NSLog(@"### com.zjx.springboard: Failed to find SBSLaunchApplicationWithIdentifier");
+            CFRelease(appBundleName);
+            return -1;
+        }
+    }
 
-    return openApp(appBundleName, false);
+    int result = openApp(appBundleName, false);
+    CFRelease(appBundleName);
+    return result;
 }
 
 id getFrontMostApplication()
@@ -33,6 +50,6 @@ id getFrontMostApplication()
         @catch (NSException *exception) {
             NSLog(@"com.zjx.springboard: Debug: %@", exception.reason);
         }
-        });
+    });
     return app;
 }

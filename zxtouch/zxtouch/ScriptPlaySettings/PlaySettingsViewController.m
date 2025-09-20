@@ -218,7 +218,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.row == 3)
     {
-        dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
+        dlopen(ROOT_PATH("/usr/lib/libactivator.dylib"), RTLD_LAZY);
         Class la = objc_getClass("LAActivator");
         if (la)
         {

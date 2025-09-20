@@ -85,7 +85,7 @@ extern PopupWindow *popupWindow;
 
 + (void)load {
     /*
-    dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY)
+    dlopen(ROOT_PATH("/usr/lib/libactivator.dylib"), RTLD_LAZY);
 
     Class la = objc_getClass("LAActivator");
     if (la) { //libactivator is installed

@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Config.h"
+#import <rootless.h>
 #import <sys/utsname.h>
 
 
@@ -84,8 +85,9 @@ Get document root of springboard
 */
 NSString* getDocumentRoot()
 {
-    //NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    return [NSString stringWithFormat:@"/var/mobile/Library/%s/" ,DOCUMENT_ROOT_FOLDER_NAME];
+    // Use the user's library directory instead of hardcoding
+    NSString *libraryPath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
+    return [libraryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%s/", DOCUMENT_ROOT_FOLDER_NAME]];
 }
 
 /**

@@ -1,5 +1,6 @@
 #include "headers/BKUserEventTimer.h"
 #import <QuartzCore/QuartzCore.h>
+#import <rootless.h>
 
 #include <UIKit/UIKit.h>
 #include <objc/runtime.h>
@@ -209,7 +210,7 @@ void startPopupListeningCallBack()
 
 Boolean initActivatorInstance()
 {
-    dlopen("/usr/lib/libactivator.dylib", RTLD_LAZY);
+    dlopen(ROOT_PATH("/usr/lib/libactivator.dylib"), RTLD_LAZY);
     Class la = objc_getClass("LAActivator");
     if (la) { //libactivator is installed
         activatorInstance = [[ActivatorListener alloc] init];

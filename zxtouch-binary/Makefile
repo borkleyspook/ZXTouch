@@ -1,9 +1,10 @@
+# Include common configuration
+include ../common.mk
 #export THEOS_DEVICE_IP = 192.168.101.245
 
 include $(THEOS)/makefiles/common.mk
 
 TOOL_NAME = zxtouchb
-zxtouchb_ARCH = arm64e arm64
 
 zxtouchb_FILES = main.mm
 zxtouchb_FRAMEWORKS = CoreFoundation UIKit CoreGraphics
