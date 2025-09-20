@@ -69,8 +69,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: "Nightly Release"
-        release_name: "Test"
+        tag_name: build-${{ github.run_number }}
+        release_name: Build ${{ github.run_number }}
         draft: false
         prerelease: false
                             
