@@ -33,7 +33,7 @@ jobs:
       run: |
         # Create the sdks directory if it doesn't exist
         mkdir -p ~/theos/sdks
-        curl -L -o ios-sdk.zip "https://github.com/xybp888/iOS-SDKs/releases/download/16.4/iPhoneOS16.4.sdk.zip"
+        curl -L -o ios-sdk.zip "https://codeload.github.com/xybp888/iOS-SDKs/zip/refs/tags/iOS16.4-SDKs"
         unzip ios-sdk.zip -d ~/theos/sdks/
         rm -rf ios-sdk.zip
         
