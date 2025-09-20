@@ -1,6 +1,6 @@
 # Include common configuration
 include ../common.mk
-# ElleKit for tweaks
+# Libhooker for tweaks
 THEOS_USE_LIBHOOKER = 1
 #export THEOS_DEVICE_IP = 192.168.0.6
 
