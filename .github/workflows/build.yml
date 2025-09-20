@@ -59,18 +59,12 @@ jobs:
     #     # Copy the built OpenCV framework
     #     cp -R opencv-repo/ios/opencv2.framework frameworks/
 
-    - name: Install ElleKit Headers
+    - name: Use libhooker for CI build
       run: |
-        # Create the include directory if it doesn't exist
-        mkdir -p ~/theos/vendor/include
-        # Download the latest ElleKit header file
-        curl -L -o ~/theos/vendor/include/ellekit.h https://raw.githubusercontent.com/tealbathingsuit/ellekit/refs/heads/main/ellekitc/include/ellekit.h
-        # Also get the libellekit.dylib for linking (optional, but good practice)
-        curl -L -o /tmp/libellekit.dylib https://static.palera.in/development/libellekit.dylib
-        # Copy it to a standard library location Theos will check
-        mkdir -p ~/theos/vendor/lib
-        cp /tmp/libellekit.dylib ~/theos/vendor/lib/
-        
+        # Override ElleKit setting for CI environment
+        echo "THEOS_USE_LIBHOOKER=1" >> $GITHUB_ENV
+        echo "TWEAK_USE_ELLEKIT=0" >> $GITHUB_ENV
+    
     - name: Build Package
       id: build_package
       run: |

@@ -28,9 +28,10 @@ char *dyld_get_image_name_new(uint32_t index)
 
 // Constructor - called when the tweak loads
 __attribute__((constructor)) static void init() {
-    // Symbol-based hooking for maximum reliability
-    void *symbol = dlsym(RTLD_DEFAULT, "_dyld_get_image_name");
-    if (symbol) {
-        HOOK(symbol, dyld_get_image_name_new, dyld_get_image_name_old);
-    }
+    // Use libhooker's LBHookFunction instead of MSHookFunction
+    LBHookFunction((void *)_dyld_get_image_name, 
+                   (void *)dyld_get_image_name_new, 
+                   (void **)&dyld_get_image_name_old);
+    
+    NSLog(@"[ZXTouch] Tweak loaded successfully with libhooker");
 }

@@ -1,7 +1,7 @@
 # Include common configuration
 include ../common.mk
 # ElleKit for tweaks
-TWEAK_USE_ELLEKIT = 1
+THEOS_USE_LIBHOOKER = 1
 #export THEOS_DEVICE_IP = 192.168.0.6
 
 include $(THEOS)/makefiles/common.mk
