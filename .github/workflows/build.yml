@@ -14,55 +14,56 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
       
-    # - name: Checkout OpenCV
-    #   run: |
-    #     git clone --branch 4.x --depth 1 https://github.com/opencv/opencv.git opencv-repo
+    - name: Checkout OpenCV
+      run: |
+        git clone --branch 4.x --depth 1 https://github.com/opencv/opencv.git opencv-repo
         
-    # - name: Install Dependencies
-    #   run: |
-    #     brew install ldid xz
+    - name: Install Dependencies
+      run: |
+        brew install ldid xz
         
-    # - name: Set up Theos
-    #   run: |
-    #     export THEOS=~/theos
-    #     [ -d "$THEOS" ] || git clone --recursive https://github.com/theos/theos.git "$THEOS"
-    #     echo "THEOS=$THEOS" >> $GITHUB_ENV
-    #     echo "$THEOS/bin" >> $GITHUB_PATH
+    - name: Set up Theos
+      run: |
+        export THEOS=~/theos
+        [ -d "$THEOS" ] || git clone --recursive https://github.com/theos/theos.git "$THEOS"
+        echo "THEOS=$THEOS" >> $GITHUB_ENV
+        echo "$THEOS/bin" >> $GITHUB_PATH
         
-    # - name: Download SDKs
-    #   run: |
-    #     # Create the sdks directory if it doesn't exist
-    #     mkdir -p ~/theos/sdks
+    - name: Download SDKs
+      run: |
+        # Create the sdks directory if it doesn't exist
+        mkdir -p ~/theos/sdks
         
-    #     curl -LO https://github.com/SamHep0803/iOS-13-Patched-SDK/archive/master.zip
-    #     TMP=$(mktemp -d)
-    #     unzip master.zip -d $TMP
-    #     mv $TMP/iOS-13-Patched-SDK-master/*.sdk ~/theos/sdks/
-    #     rm -r master.zip $TMP
+        curl -LO https://github.com/SamHep0803/iOS-13-Patched-SDK/archive/master.zip
+        TMP=$(mktemp -d)
+        unzip master.zip -d $TMP
+        mv $TMP/iOS-13-Patched-SDK-master/*.sdk ~/theos/sdks/
+        rm -r master.zip $TMP
         
-    # - name: Build OpenCV Framework
-    #   run: |
-    #     cd opencv-repo
-    #     python3 platforms/ios/build_framework.py ios \
-    #       --iphoneos_archs "arm64,arm64e" \
-    #       --iphoneos_deployment_target "14.0" \
-    #       --disable-bitcode \
-    #       --static \
-    #       --build_only_specified_archs \
-    #       --legacy_build
+    - name: Build OpenCV Framework
+      run: |
+        cd opencv-repo
+        python3 platforms/ios/build_framework.py ios \
+          --iphoneos_archs "arm64,arm64e" \
+          --iphoneos_deployment_target "14.0" \
+          --disable-bitcode \
+          --static \
+          --build_only_specified_archs \
+          --legacy_build
           
-    # - name: Copy OpenCV Framework
-    #   run: |
-    #     # Create frameworks directory if it doesn't exist
-    #     mkdir -p frameworks
-    #     # Copy the built OpenCV framework
-    #     cp -R opencv-repo/ios/opencv2.framework frameworks/
+    - name: Copy OpenCV Framework
+      run: |
+        # Create frameworks directory if it doesn't exist
+        mkdir -p frameworks
+        # Copy the built OpenCV framework
+        cp -R opencv-repo/ios/opencv2.framework frameworks/
         
-    # - name: Build Package
-    #   id: build_package
-    #   run: |
-    #     make package FINALPACKAGE=1
-    #     echo "::set-output name=package::$(ls -t packages | head -n1)"
+    - name: Build Package
+      id: build_package
+      run: |
+        make package FINALPACKAGE=1
+        echo "::set-output name=package::$(ls -t packages | head -n1)"
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
