@@ -29,11 +29,11 @@ jobs:
         echo "THEOS=$THEOS" >> $GITHUB_ENV
         echo "$THEOS/bin" >> $GITHUB_PATH
         
-    - name: Download iOS 16.4 SDK (Rootless Compatible)
+    - name: Download iOS 16.1 SDK (Rootless Compatible)
       run: |
         # Create the sdks directory if it doesn't exist
         mkdir -p ~/theos/sdks
-        curl -L -o ios-sdk.zip "https://codeload.github.com/xybp888/iOS-SDKs/zip/refs/tags/iOS16.4-SDKs"
+        curl -L -o ios-sdk.zip "https://github.com/xybp888/iOS-SDKs/releases/download/iOS-SDKs/iPhoneOS16.1.sdk.zip"
         unzip ios-sdk.zip -d ~/theos/sdks/
         rm -rf ios-sdk.zip
         
@@ -58,6 +58,18 @@ jobs:
     #     mkdir -p frameworks
     #     # Copy the built OpenCV framework
     #     cp -R opencv-repo/ios/opencv2.framework frameworks/
+
+    - name: Install ElleKit Headers
+      run: |
+        # Create the include directory if it doesn't exist
+        mkdir -p ~/theos/vendor/include
+        # Download the latest ElleKit header file
+        curl -L -o ~/theos/vendor/include/ellekit.h https://raw.githubusercontent.com/tealbathingsuit/ellekit/refs/heads/main/ellekitc/include/ellekit.h
+        # Also get the libellekit.dylib for linking (optional, but good practice)
+        curl -L -o /tmp/libellekit.dylib https://static.palera.in/development/libellekit.dylib
+        # Copy it to a standard library location Theos will check
+        mkdir -p ~/theos/vendor/lib
+        cp /tmp/libellekit.dylib ~/theos/vendor/lib/
         
     - name: Build Package
       id: build_package
