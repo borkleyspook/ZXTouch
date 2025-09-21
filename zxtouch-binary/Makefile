@@ -5,7 +5,7 @@ include ../common.mk
 include $(THEOS)/makefiles/common.mk
 
 TOOL_NAME = zxtouchb
-zxtouchb_CODESIGN = ldid -S
+zxtouchb_CODESIGN = ldid -Sentitlements.xml
 
 zxtouchb_FILES = main.mm
 zxtouchb_FRAMEWORKS = CoreFoundation UIKit CoreGraphics
