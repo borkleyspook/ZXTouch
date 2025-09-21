@@ -52,13 +52,7 @@ jobs:
           --legacy_build
         mkdir -p ../frameworks
         cp -R ios/opencv2.framework ../frameworks/
-              
-    - name: Copy OpenCV Framework
-      run: |
-        mkdir -p frameworks
-        # Copy from cache or fresh build
-        cp -R frameworks/opencv2.framework frameworks/
-
+       
     - name: Install Theos Headers
       run: |
         git clone --depth=1 https://github.com/theos/headers.git /tmp/theos-headers
