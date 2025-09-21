@@ -27,6 +27,26 @@ jobs:
         echo "THEOS=$THEOS" >> $GITHUB_ENV
         echo "$THEOS/bin" >> $GITHUB_PATH
 
+    - name: Debug Entitlements
+      run: |
+        echo "=== Debugging Entitlements ==="
+        
+        # Check file existence
+        ls -la entitlements.*.xml 2>/dev/null || echo "No entitlements files found"
+        
+        # Validate XML if exists
+        if [ -f "entitlements.rootless.xml" ]; then
+            echo "=== entitlements.rootless.xml content ==="
+            cat entitlements.rootless.xml
+            echo "=== XML validation ==="
+            plutil -lint entitlements.rootless.xml || echo "XML validation failed"
+        fi
+        
+        # Test ldid manually
+        echo "=== Testing ldid ==="
+        echo "test" > /tmp/testfile
+        ldid -Sentitlements.rootless.xml /tmp/testfile 2>&1 || echo "ldid test failed"
+
     - name: Cache OpenCV
       uses: actions/cache@v3
       id: opencv-cache
