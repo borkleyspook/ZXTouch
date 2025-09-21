@@ -13,7 +13,7 @@ TARGET_CODESIGN_FLAGS = -S
 
 # For rootless, use entitlements
 ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
-    TARGET_CODESIGN_FLAGS = -Sentitlements.rootless.xml
+    TARGET_CODESIGN_FLAGS = -S$(THEOS_PROJECT_DIR)/entitlements.rootless.xml
 else
     TARGET_CODESIGN_FLAGS = -S
 endif
