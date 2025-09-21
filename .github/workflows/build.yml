@@ -14,10 +14,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
       
-   # - name: Checkout OpenCV
-   #   run: |
-   #     git clone --branch 4.x --depth 1 https://github.com/opencv/opencv.git opencv-repo
-        
     - name: Install Dependencies
       run: |
         brew install ldid xz
@@ -29,15 +25,43 @@ jobs:
         echo "THEOS=$THEOS" >> $GITHUB_ENV
         echo "$THEOS/bin" >> $GITHUB_PATH
 
-    - name: Install Theos Headers with Libhooker
+    - name: Cache OpenCV
+      uses: actions/cache@v3
+      id: opencv-cache
+      with:
+        path: opencv-repo/ios/opencv2.framework
+        key: ${{ runner.os }}-opencv-${{ hashFiles('build.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-opencv-
+
+    - name: Checkout OpenCV (if not cached)
+      if: steps.opencv-cache.outputs.cache-hit != 'true'
       run: |
-        # Clone the headers repository
-        git clone --recurse-submodules https://github.com/theos/headers.git /tmp/theos-headers
-        # Copy libhooker headers to vendor include
-        mkdir -p ~/theos/vendor/include/libhooker
-        cp -R /tmp/theos-headers/libhooker/* ~/theos/vendor/include/libhooker/
-        # Also copy to root for simple import
-        cp /tmp/theos-headers/libhooker/libhooker.h ~/theos/vendor/include/
+        git clone --branch 4.x --depth 1 https://github.com/opencv/opencv.git opencv-repo
+        
+    - name: Build OpenCV Framework (if not cached)
+      if: steps.opencv-cache.outputs.cache-hit != 'true'
+        run: |
+          cd opencv-repo
+          python3 platforms/ios/build_framework.py ios \
+            --iphoneos_archs "arm64,arm64e" \
+            --iphoneos_deployment_target "15.0" \
+            --disable-bitcode \
+            --static \
+            --build_only_specified_archs \
+            --legacy_build
+          
+    - name: Copy OpenCV Framework
+      run: |
+        mkdir -p frameworks
+        # Copy from cache or fresh build
+        cp -R opencv-repo/ios/opencv2.framework frameworks/
+
+    - name: Install Theos Headers
+      run: |
+        git clone --depth=1 https://github.com/theos/headers.git /tmp/theos-headers
+        mkdir -p ~/theos/vendor/include
+        cp -R /tmp/theos-headers/* ~/theos/vendor/include/
         
     - name: Download iOS 16.1 SDK (Rootless Compatible)
       run: |
@@ -51,24 +75,6 @@ jobs:
       run: |
         echo "THEOS_PACKAGE_SCHEME=rootless" >> $GITHUB_ENV
         
-    # - name: Build OpenCV Framework
-    #   run: |
-    #     cd opencv-repo
-    #     python3 platforms/ios/build_framework.py ios \
-    #       --iphoneos_archs "arm64,arm64e" \
-    #       --iphoneos_deployment_target "15.0" \
-    #       --disable-bitcode \
-    #       --static \
-    #       --build_only_specified_archs \
-    #       --legacy_build
-          
-    # - name: Copy OpenCV Framework
-    #   run: |
-    #     # Create frameworks directory if it doesn't exist
-    #     mkdir -p frameworks
-    #     # Copy the built OpenCV framework
-    #     cp -R opencv-repo/ios/opencv2.framework frameworks/
-
     - name: Use Substrate compatibility
       run: |
         # Disable libhooker and ellekit to use default Substrate
