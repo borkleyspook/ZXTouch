@@ -5,7 +5,7 @@ on:
     
 permissions:
   actions: read
-  contents: write  # To upload artifacts (required for actions/upload-artifact)
+  contents: write
   
 jobs:
   build:
@@ -15,14 +15,8 @@ jobs:
       THEOS: theos
 
     steps:
-    - name: Setup log capture
-      run: |
-        # This will help capture logs throughout the build
-        echo "Build started at: $(date)" > build_log.txt
-        echo "GITHUB_RUN_ID: $GITHUB_RUN_ID" >> build_log.txt
-
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v4
       
     - name: Install Dependencies
       run: |
@@ -43,7 +37,7 @@ jobs:
         echo "$THEOS/bin" >> $GITHUB_PATH
 
     - name: Cache OpenCV
-      uses: actions/cache@main
+      uses: actions/cache@v4
       id: opencv-cache
       with:
         path: frameworks/opencv2.framework
@@ -97,12 +91,13 @@ jobs:
     - name: Build Package
       id: build_package
       run: |
-        make package FINALPACKAGE=1
+        # Capture build output to a log file
+        make package FINALPACKAGE=1 2>&1 | tee build_output.log
         echo "package=$(ls -t packages/*.deb | head -n1 | xargs basename)" >> $GITHUB_OUTPUT
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@main
+      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -112,7 +107,7 @@ jobs:
         prerelease: false
                             
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@main
+      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -121,67 +116,55 @@ jobs:
         asset_name: ${{ steps.build_package.outputs.package }}
         asset_content_type: application/vnd.debian.binary-package
         
-    - name: Capture final build logs
+    - name: Capture and upload build logs
       if: always()
-      run: |
-        echo "Build completed at: $(date)" >> build_log.txt
-        echo "Final result: ${{ job.status }}" >> build_log.txt
-        
-        # Capture recent console output (last 100 lines might be available)
-        history 100 2>/dev/null >> build_log.txt || echo "History unavailable" >> build_log.txt
-
-    - name: Upload build logs
-      if: always()
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v4
       with:
         name: build-logs
         path: |
+          build_output.log
           ${{ github.workspace }}/**/*.log
-          ${{ github.workspace }}/**/make.out
-          ${{ github.workspace }}/**/build.log
         retention-days: 1
 
   # LOG PROCESSING JOB - RUNS NO MATTER WHAT
   process-logs:
     name: Process Build Logs
-    needs: [build]  # Runs after build job, even if it fails
-    if: always()  # This ensures it runs no matter what
+    needs: [build]
+    if: always()
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Download build logs
-        uses: actions/download-artifact@main
+        uses: actions/download-artifact@v4
         with:
-          name: build-logs  # We'll need to capture logs in the build job first
+          name: build-logs
           path: ./logs
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Process and filter log
         run: |
           echo "## LOG PROCESSING ##"
           echo "Build conclusion: ${{ needs.build.result }}"
           
-          # Try to find any log files
-          if [ -d "logs" ]; then
-            echo "Looking for log files in logs directory..."
-            find logs -type f -name "*.log" -o -name "*.out" | head -5
-            # Use the first log file found, or create a placeholder
-            FIRST_LOG=$(find logs -type f -name "*.log" -o -name "*.out" | head -1)
-            if [ -n "$FIRST_LOG" ] && [ -f "$FIRST_LOG" ]; then
-              echo "Using log file: $FIRST_LOG"
-              cp "$FIRST_LOG" raw_log.txt
+          # Check if we have the main build output log
+          if [ -f "logs/build_output.log" ]; then
+            echo "Using build_output.log"
+            cp logs/build_output.log raw_log.txt
           else
+            # Try to find any log file
+            echo "Looking for any log files..."
+            ANY_LOG=$(find logs -type f -name "*.log" | head -1)
+            if [ -n "$ANY_LOG" ] && [ -f "$ANY_LOG" ]; then
+              echo "Using found log: $ANY_LOG"
+              cp "$ANY_LOG" raw_log.txt
+            else
               echo "No log files found, creating placeholder"
               echo "Build completed with status: ${{ needs.build.result }}" > raw_log.txt
-              echo "No detailed logs available" >> raw_log.txt
+              echo "Run ID: ${{ github.run_id }}" >> raw_log.txt
+              echo "No detailed logs were captured" >> raw_log.txt
             fi
-          else
-            echo "No logs directory found, creating placeholder"
-            echo "Build completed with status: ${{ needs.build.result }}" > raw_log.txt
-            echo "No log artifacts were uploaded" >> raw_log.txt
           fi
           
           # Filter for important information
@@ -207,15 +190,8 @@ jobs:
           tail -20 raw_log.txt >> stripped_log.txt 2>/dev/null || echo "No tail available" >> stripped_log.txt
 
       - name: Upload processed log
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4
         with:
           name: processed-build-log-${{ github.run_number }}
           path: stripped_log.txt
-          retention-days: 7
-
-      - name: Upload raw log for debugging
-        uses: actions/upload-artifact@main
-        with:
-          name: raw-build-log-${{ github.run_number }}
-          path: raw_log.txt
           retention-days: 7
