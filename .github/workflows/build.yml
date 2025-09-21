@@ -29,10 +29,16 @@ jobs:
         echo "THEOS=$THEOS" >> $GITHUB_ENV
         echo "$THEOS/bin" >> $GITHUB_PATH
 
-    - name: Install Theos Headers
+    - name: Install Theos Headers with Libhooker
       run: |
-        git clone https://github.com/theos/headers.git ~/theos/vendor/include/headers
-    
+        # Clone the headers repository
+        git clone --recurse-submodules https://github.com/theos/headers.git /tmp/theos-headers
+        # Copy libhooker headers to vendor include
+        mkdir -p ~/theos/vendor/include/libhooker
+        cp -R /tmp/theos-headers/libhooker/* ~/theos/vendor/include/libhooker/
+        # Also copy to root for simple import
+        cp /tmp/theos-headers/libhooker/libhooker.h ~/theos/vendor/include/
+        
     - name: Download iOS 16.1 SDK (Rootless Compatible)
       run: |
         # Create the sdks directory if it doesn't exist
