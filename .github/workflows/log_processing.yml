@@ -2,7 +2,7 @@ name: Fetch and Process Build Workflow Log
 
 on:
   workflow_run:
-    workflows: ["build"]  # Changed to match your build.yml workflow name
+    workflows: [build]  # Changed to match your build.yml workflow name
     types: [completed]
     branches: [master, rootless]  # Added to match the branches from build.yml
 
