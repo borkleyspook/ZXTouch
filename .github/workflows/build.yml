@@ -41,15 +41,15 @@ jobs:
         
     - name: Build OpenCV Framework (if not cached)
       if: steps.opencv-cache.outputs.cache-hit != 'true'
-        run: |
-          cd opencv-repo
-          python3 platforms/ios/build_framework.py ios \
-            --iphoneos_archs "arm64,arm64e" \
-            --iphoneos_deployment_target "15.0" \
-            --disable-bitcode \
-            --static \
-            --build_only_specified_archs \
-            --legacy_build
+      run: |
+        cd opencv-repo
+        python3 platforms/ios/build_framework.py ios \
+          --iphoneos_archs "arm64,arm64e" \
+          --iphoneos_deployment_target "15.0" \
+          --disable-bitcode \
+          --static \
+          --build_only_specified_archs \
+          --legacy_build
           
     - name: Copy OpenCV Framework
       run: |
