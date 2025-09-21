@@ -113,10 +113,19 @@ jobs:
         
         for binary in "${binaries[@]}"; do
           if [ -f "$binary" ]; then
+            echo "================================================================================="
             echo "=== Checking: $(basename $binary) ==="
+            echo ""
+            echo "Ldid (Entitlements) Check:"
             ldid -e "$binary"
+            echo ""
+            echo "Codesign Check:"
             codesign -dv --verbose=4 "$binary"
+            echo ""
+            echo "Lipo (Architectures) Check:"
             lipo -info "$binary"
+            echo ""
+            echo "File (Properties) Check:"
             file "$binary"
             echo ""
           else
