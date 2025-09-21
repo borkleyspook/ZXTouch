@@ -1,0 +1,55 @@
+name: Fetch and Process Build Workflow Log
+
+on:
+  workflow_run:
+    workflows: ["build"]  # Changed to match your build.yml workflow name
+    types: [completed]
+    branches: [master, rootless]  # Added to match the branches from build.yml
+
+jobs:
+  process-log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch workflow log
+        uses: actions/github-script@v6
+        id: fetch-log
+        with:
+          script: |
+            const { data: log } = await github.rest.actions.downloadWorkflowRunLogs({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+            
+            // Save the log
+            const fs = require('fs');
+            fs.writeFileSync('${process.env.GITHUB_WORKSPACE}/raw_log.txt', log);
+            
+            return 'Log downloaded';
+
+      - name: Process and filter log
+        run: |
+          # Filter for important information
+          grep -E -i \
+            "##\[(warning|error)\]|Error:|error:|FAIL|FAILED|Exception|fatal:|##\[group\]|##\[endgroup\]|==>|🍺|Cache|Switched|Initialized|Cloning|Downloading|curl|unzip|make:|ldid:|brew install|THEOS|SDK|framework" \
+            raw_log.txt > filtered_log.txt || echo "No matches found"
+          
+          # Add header and summary
+          echo "## STRIPPED BUILD LOG ##" > stripped_log.txt
+          echo "Workflow: ${{ github.event.workflow_run.name }}" >> stripped_log.txt
+          echo "Run ID: ${{ github.event.workflow_run.id }}" >> stripped_log.txt
+          echo "Status: ${{ github.event.workflow_run.conclusion }}" >> stripped_log.txt
+          echo "=========================" >> stripped_log.txt
+          cat filtered_log.txt >> stripped_log.txt
+          
+          # Add final result
+          echo "" >> stripped_log.txt
+          echo "## FINAL RESULT ##" >> stripped_log.txt
+          tail -20 raw_log.txt >> stripped_log.txt
+
+      - name: Upload stripped log
+        uses: actions/upload-artifact@v3
+        with:
+          name: stripped-workflow-log
+          path: stripped_log.txt
+          retention-days: 7
