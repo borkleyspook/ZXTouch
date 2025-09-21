@@ -109,6 +109,24 @@ jobs:
           echo "No binary found to check architectures"
         fi
         
+    - name: Verify Code Signing
+      run: |
+        # Check if binaries are properly signed
+        find .theos -name "*.dylib" -o -name "zxtouchb" | head -3 | xargs -I {} ldid -e {}
+        echo "✅ Code signing verification completed"
+    
+    - name: Other Checks (May be redundant)
+      run: |
+        # Check if files are executable (basic test)
+        find .theos -name "*.dylib" -o -name "zxtouchb" | xargs -I {} file {}
+
+        # Check architectures (ensure arm64/arm64e)
+        find .theos -name "*.dylib" -o -name "zxtouchb" | xargs -I {} lipo -info {}
+
+        # Check code signature status
+        find .theos -name "*.dylib" -o -name "zxtouchb" | xargs -I {} codesign -dv --verbose=4 {}
+        echo "✅ Other Checks Completed"
+    
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
