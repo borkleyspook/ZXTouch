@@ -85,6 +85,22 @@ jobs:
         make package FINALPACKAGE=1
         echo "::set-output name=package::$(ls -t packages | head -n1)"
 
+    - name: Verify Theos Signing Configuration
+      run: |
+        echo "=== Theos Signing Configuration ==="
+        echo "TARGET_CODESIGN: $(make -p 2>/dev/null | grep '^TARGET_CODESIGN' | head -1 || echo 'Not set')"
+        echo "TARGET_CODESIGN_FLAGS: $(make -p 2>/dev/null | grep '^TARGET_CODESIGN_FLAGS' | head -1 || echo 'Not set')"
+        echo "THEOS_PACKAGE_SCHEME: $(make -p 2>/dev/null | grep '^THEOS_PACKAGE_SCHEME' | head -1 || echo 'Not set')"
+        
+        echo "=== Actual Binary Verification ==="
+        # Check if binaries got properly signed
+        find .theos/obj -name "*.dylib" -o -name "zxtouchb" | head -3 | while read binary; do
+            if [ -f "$binary" ]; then
+                echo "Checking: $(basename "$binary")"
+                ldid -e "$binary" 2>/dev/null | head -5 | grep -E "(DOCTYPE|platform-application)" && echo "✅ Has entitlements" || echo "❌ No entitlements found"
+            fi
+        done
+        
     - name: List Built Packages
       run: |
         echo "Built packages:"
