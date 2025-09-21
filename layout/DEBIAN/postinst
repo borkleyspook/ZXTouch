@@ -1,5 +1,42 @@
 #!/bin/sh
-su mobile -c uicache
-echo "mobile ALL=(root) NOPASSWD:/usr/bin/zxtouchb" >> /etc/sudoers
-chown -R mobile:mobile /var/mobile/Library/ZXTouch
-chmod +x /var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/add_datetime.sh
+
+# Rootless postinst script
+
+# UICache - use proper rootless-compatible method
+if [ -f /usr/bin/uicache ]; then
+    /usr/bin/uicache
+elif [ -f /var/jb/usr/bin/uicache ]; then
+    /var/jb/usr/bin/uicache
+fi
+
+# Remove sudoers entry - not needed in rootless
+# sudo doesn't exist in rootless environments
+
+# Set permissions for ZXTouch directory
+ZXTOUCH_PATH="/var/mobile/Library/ZXTouch"
+if [ -d "$ZXTOUCH_PATH" ]; then
+    # Use chmod instead of chown (ownership changes restricted in rootless)
+    chmod -R 755 "$ZXTOUCH_PATH"
+    
+    # For rootless, the mobile user should already have appropriate access
+    # without needing ownership changes
+fi
+
+# Make add_datetime.sh executable
+if [ -f "/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/add_datetime.sh" ]; then
+    chmod +x "/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/add_datetime.sh"
+fi
+
+# Additional rootless considerations
+# Check if we're in a rootless environment
+if [ -d "/var/jb" ]; then
+    echo "Rootless environment detected"
+    
+    # Ensure proper paths exist
+    if [ ! -d "/var/mobile/Library/ZXTouch" ]; then
+        mkdir -p "/var/mobile/Library/ZXTouch"
+        chmod 755 "/var/mobile/Library/ZXTouch"
+    fi
+fi
+
+echo "Installation completed for rootless jailbreak"
