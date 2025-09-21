@@ -139,11 +139,6 @@ jobs:
     - name: More checks against stuff not getting signed
       run: |
         echo ""
-        echo "Try manual signing to see if ldid works"
-        echo ""
-        echo "ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb"
-        ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb
-        echo ""
         echo "codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb"
         codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb
         echo ""
