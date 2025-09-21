@@ -250,7 +250,7 @@ static BOOL isPlaying = false;
     
     // check python exists
     // Fix the python check
-    if (![[NSFileManager defaultManager] fileExistsAtPath:ROOT_PATH("/bin/python3")])
+    if (![[NSFileManager defaultManager] fileExistsAtPath:ROOT_PATH_NS(@"/bin/python3")])
     {
         showAlertBox(@"Error", @"Cannot play this script. /bin/python3 not found. Please install Python3.7 on your device.", 999);
         isPlaying = false;
