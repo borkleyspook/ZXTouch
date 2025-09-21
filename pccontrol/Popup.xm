@@ -5,6 +5,7 @@
 #include "AlertBox.h"
 #include "Toast.h"
 #import <UIKit/UIKit.h>
+#import <rootless.h>
 
 extern CGFloat device_screen_width;
 extern CGFloat device_screen_height;
