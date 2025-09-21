@@ -15,6 +15,12 @@ jobs:
       THEOS: theos
 
     steps:
+    - name: Setup log capture
+      run: |
+        # This will help capture logs throughout the build
+        echo "Build started at: $(date)" > build_log.txt
+        echo "GITHUB_RUN_ID: $GITHUB_RUN_ID" >> build_log.txt
+
     - name: Checkout
       uses: actions/checkout@master
       
@@ -92,7 +98,7 @@ jobs:
       id: build_package
       run: |
         make package FINALPACKAGE=1
-        echo "::set-output name=package::$(ls -t packages | head -n1)"
+        echo "package=$(ls -t packages/*.deb | head -n1 | xargs basename)" >> $GITHUB_OUTPUT
 
     - name: Create Release
       id: create_release
@@ -114,3 +120,86 @@ jobs:
         asset_path: ./packages/${{ steps.build_package.outputs.package }}
         asset_name: ${{ steps.build_package.outputs.package }}
         asset_content_type: application/vnd.debian.binary-package
+        
+    - name: Capture final build logs
+      if: always()
+      run: |
+        echo "Build completed at: $(date)" >> build_log.txt
+        echo "Final result: ${{ job.status }}" >> build_log.txt
+        
+        # Capture recent console output (last 100 lines might be available)
+        history 100 2>/dev/null >> build_log.txt || echo "History unavailable" >> build_log.txt
+
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-logs
+        path: build_log.txt
+        retention-days: 1
+  # LOG PROCESSING JOB - RUNS NO MATTER WHAT
+  process-logs:
+    name: Process Build Logs
+    needs: [build]  # Runs after build job, even if it fails
+    if: always()  # This ensures it runs no matter what
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build logs
+        uses: actions/download-artifact@v3
+        with:
+          name: build-logs  # We'll need to capture logs in the build job first
+          path: ./logs
+
+      - name: Process and filter log
+        run: |
+          echo "## LOG PROCESSING ##"
+          echo "Build conclusion: ${{ needs.build.result }}"
+          
+          # Check if log files exist
+          if [ -f "logs/raw_log.txt" ]; then
+            echo "Found raw log file"
+            cp logs/raw_log.txt .
+          else
+            echo "No raw log found, creating placeholder"
+            echo "Build log unavailable - job status: ${{ needs.build.result }}" > raw_log.txt
+          fi
+          
+          # Filter for important information
+          grep -E -i \
+            "##\[(warning|error)\]|Error:|error:|FAIL|FAILED|Exception|fatal:|##\[group\]|##\[endgroup\]|==>|🍺|Cache|Switched|Initialized|Cloning|Downloading|curl|unzip|make:|ldid:|brew install|THEOS|SDK|framework" \
+            raw_log.txt > filtered_log.txt || echo "No matches found" > filtered_log.txt
+          
+          # Add header and summary
+          echo "## STRIPPED BUILD LOG ##" > stripped_log.txt
+          echo "Workflow: ${{ github.workflow }}" >> stripped_log.txt
+          echo "Run ID: ${{ github.run_id }}" >> stripped_log.txt
+          echo "Run Number: ${{ github.run_number }}" >> stripped_log.txt
+          echo "Status: ${{ needs.build.result }}" >> stripped_log.txt
+          echo "Branch: ${{ github.ref_name }}" >> stripped_log.txt
+          echo "Commit: ${{ github.sha }}" >> stripped_log.txt
+          echo "Triggered by: ${{ github.event_name }}" >> stripped_log.txt
+          echo "=========================" >> stripped_log.txt
+          cat filtered_log.txt >> stripped_log.txt
+          
+          # Add final result
+          echo "" >> stripped_log.txt
+          echo "## FINAL RESULT ##" >> stripped_log.txt
+          tail -20 raw_log.txt >> stripped_log.txt 2>/dev/null || echo "No tail available" >> stripped_log.txt
+
+      - name: Upload processed log
+        uses: actions/upload-artifact@v3
+        with:
+          name: processed-build-log-${{ github.run_number }}
+          path: stripped_log.txt
+          retention-days: 7
+
+      - name: Upload raw log for debugging
+        uses: actions/upload-artifact@v3
+        with:
+          name: raw-build-log-${{ github.run_number }}
+          path: raw_log.txt
+          retention-days: 7
