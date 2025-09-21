@@ -3,6 +3,10 @@ on:
   push:
     branches: [master, rootless]
     
+permissions:
+  actions: read
+  contents: write
+  
 jobs:
   build:
     name: Build App
@@ -87,8 +91,9 @@ jobs:
     - name: Build Package
       id: build_package
       run: |
-        make package FINALPACKAGE=1
-        echo "::set-output name=package::$(ls -t packages | head -n1)"
+        # Capture build output to a log file
+        make package FINALPACKAGE=1 2>&1 | tee build_output.log
+        echo "package=$(ls -t packages/*.deb | head -n1 | xargs basename)" >> $GITHUB_OUTPUT
 
     - name: Create Release
       id: create_release
@@ -110,3 +115,83 @@ jobs:
         asset_path: ./packages/${{ steps.build_package.outputs.package }}
         asset_name: ${{ steps.build_package.outputs.package }}
         asset_content_type: application/vnd.debian.binary-package
+        
+    - name: Capture and upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          build_output.log
+          ${{ github.workspace }}/**/*.log
+        retention-days: 1
+
+  # LOG PROCESSING JOB - RUNS NO MATTER WHAT
+  process-logs:
+    name: Process Build Logs
+    needs: [build]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build logs
+        uses: actions/download-artifact@v4
+        with:
+          name: build-logs
+          path: ./logs
+
+      - name: Process and filter log
+        run: |
+          echo "## LOG PROCESSING ##"
+          echo "Build conclusion: ${{ needs.build.result }}"
+          
+          # Check if we have the main build output log
+          if [ -f "logs/build_output.log" ]; then
+            echo "Using build_output.log"
+            cp logs/build_output.log raw_log.txt
+          else
+            # Try to find any log file
+            echo "Looking for any log files..."
+            ANY_LOG=$(find logs -type f -name "*.log" | head -1)
+            if [ -n "$ANY_LOG" ] && [ -f "$ANY_LOG" ]; then
+              echo "Using found log: $ANY_LOG"
+              cp "$ANY_LOG" raw_log.txt
+            else
+              echo "No log files found, creating placeholder"
+              echo "Build completed with status: ${{ needs.build.result }}" > raw_log.txt
+              echo "Run ID: ${{ github.run_id }}" >> raw_log.txt
+              echo "No detailed logs were captured" >> raw_log.txt
+            fi
+          fi
+          
+          # Filter for important information
+          grep -E -i \
+            "##\[(warning|error)\]|Error:|error:|FAIL|FAILED|Exception|fatal:|##\[group\]|##\[endgroup\]|==>|🍺|Cache|Switched|Initialized|Cloning|Downloading|curl|unzip|make:|ldid:|brew install|THEOS|SDK|framework" \
+            raw_log.txt > filtered_log.txt || echo "No matches found" > filtered_log.txt
+          
+          # Add header and summary
+          echo "## STRIPPED BUILD LOG ##" > stripped_log.txt
+          echo "Workflow: ${{ github.workflow }}" >> stripped_log.txt
+          echo "Run ID: ${{ github.run_id }}" >> stripped_log.txt
+          echo "Run Number: ${{ github.run_number }}" >> stripped_log.txt
+          echo "Status: ${{ needs.build.result }}" >> stripped_log.txt
+          echo "Branch: ${{ github.ref_name }}" >> stripped_log.txt
+          echo "Commit: ${{ github.sha }}" >> stripped_log.txt
+          echo "Triggered by: ${{ github.event_name }}" >> stripped_log.txt
+          echo "=========================" >> stripped_log.txt
+          cat filtered_log.txt >> stripped_log.txt
+          
+          # Add final result
+          echo "" >> stripped_log.txt
+          echo "## FINAL RESULT ##" >> stripped_log.txt
+          tail -20 raw_log.txt >> stripped_log.txt 2>/dev/null || echo "No tail available" >> stripped_log.txt
+
+      - name: Upload processed log
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-build-log-${{ github.run_number }}
+          path: stripped_log.txt
+          retention-days: 7
