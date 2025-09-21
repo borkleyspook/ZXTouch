@@ -83,23 +83,3 @@ jobs:
         echo "THEOS_USE_LIBHOOKER=0" >> $GITHUB_ENV
         echo "TWEAK_USE_ELLEKIT=0" >> $GITHUB_ENV
     
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: build-${{ github.run_number }}
-        release_name: Build ${{ github.run_number }}
-        draft: false
-        prerelease: false
-                            
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}          
-        asset_path: ./packages/${{ steps.build_package.outputs.package }}
-        asset_name: ${{ steps.build_package.outputs.package }}
-        asset_content_type: application/vnd.debian.binary-package
