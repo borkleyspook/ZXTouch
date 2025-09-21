@@ -28,7 +28,11 @@ jobs:
         [ -d "$THEOS" ] && (cd "$THEOS" && git pull --recurse-submodules) || git clone --recursive https://github.com/theos/theos.git "$THEOS"
         echo "THEOS=$THEOS" >> $GITHUB_ENV
         echo "$THEOS/bin" >> $GITHUB_PATH
-        
+
+    - name: Install Theos Headers
+      run: |
+        git clone https://github.com/theos/headers.git ~/theos/vendor/include/headers
+    
     - name: Download iOS 16.1 SDK (Rootless Compatible)
       run: |
         # Create the sdks directory if it doesn't exist
