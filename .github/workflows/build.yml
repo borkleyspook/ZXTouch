@@ -43,7 +43,7 @@ jobs:
         echo "$THEOS/bin" >> $GITHUB_PATH
 
     - name: Cache OpenCV
-      uses: actions/cache@v3
+      uses: actions/cache@main
       id: opencv-cache
       with:
         path: frameworks/opencv2.framework
@@ -132,11 +132,15 @@ jobs:
 
     - name: Upload build logs
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@main
       with:
         name: build-logs
-        path: build_log.txt
+        path: |
+          ${{ github.workspace }}/**/*.log
+          ${{ github.workspace }}/**/make.out
+          ${{ github.workspace }}/**/build.log
         retention-days: 1
+
   # LOG PROCESSING JOB - RUNS NO MATTER WHAT
   process-logs:
     name: Process Build Logs
@@ -149,23 +153,35 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download build logs
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@main
         with:
           name: build-logs  # We'll need to capture logs in the build job first
           path: ./logs
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Process and filter log
         run: |
           echo "## LOG PROCESSING ##"
           echo "Build conclusion: ${{ needs.build.result }}"
           
-          # Check if log files exist
-          if [ -f "logs/raw_log.txt" ]; then
-            echo "Found raw log file"
-            cp logs/raw_log.txt .
+          # Try to find any log files
+          if [ -d "logs" ]; then
+            echo "Looking for log files in logs directory..."
+            find logs -type f -name "*.log" -o -name "*.out" | head -5
+            # Use the first log file found, or create a placeholder
+            FIRST_LOG=$(find logs -type f -name "*.log" -o -name "*.out" | head -1)
+            if [ -n "$FIRST_LOG" ] && [ -f "$FIRST_LOG" ]; then
+              echo "Using log file: $FIRST_LOG"
+              cp "$FIRST_LOG" raw_log.txt
           else
-            echo "No raw log found, creating placeholder"
-            echo "Build log unavailable - job status: ${{ needs.build.result }}" > raw_log.txt
+              echo "No log files found, creating placeholder"
+              echo "Build completed with status: ${{ needs.build.result }}" > raw_log.txt
+              echo "No detailed logs available" >> raw_log.txt
+            fi
+          else
+            echo "No logs directory found, creating placeholder"
+            echo "Build completed with status: ${{ needs.build.result }}" > raw_log.txt
+            echo "No log artifacts were uploaded" >> raw_log.txt
           fi
           
           # Filter for important information
@@ -191,7 +207,7 @@ jobs:
           tail -20 raw_log.txt >> stripped_log.txt 2>/dev/null || echo "No tail available" >> stripped_log.txt
 
       - name: Upload processed log
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@main
         with:
           name: processed-build-log-${{ github.run_number }}
           path: stripped_log.txt
