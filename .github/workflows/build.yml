@@ -16,7 +16,14 @@ jobs:
       
     - name: Install Dependencies
       run: |
-        brew install ldid xz
+        brew install ldid xz make  # ← Added 'make' here
+        
+    - name: Install Modern GNU Make
+      run: |
+        # Install the latest GNU Make
+        brew install make
+        # Add GNU Make to PATH (takes precedence over system make)
+        echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
         
     - name: Set up Theos
       run: |
@@ -29,7 +36,7 @@ jobs:
       uses: actions/cache@v3
       id: opencv-cache
       with:
-        path: frameworks/opencv2.framework  # ← Cache the final location
+        path: frameworks/opencv2.framework
         key: ${{ runner.os }}-opencv-${{ hashFiles('build.yml') }}
         restore-keys: |
           ${{ runner.os }}-opencv-
