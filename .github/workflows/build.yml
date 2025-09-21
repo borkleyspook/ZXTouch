@@ -29,7 +29,7 @@ jobs:
       uses: actions/cache@v3
       id: opencv-cache
       with:
-        path: opencv-repo/ios/opencv2.framework
+        path: frameworks/opencv2.framework  # ← Cache the final location
         key: ${{ runner.os }}-opencv-${{ hashFiles('build.yml') }}
         restore-keys: |
           ${{ runner.os }}-opencv-
@@ -50,7 +50,9 @@ jobs:
           --static \
           --build_only_specified_archs \
           --legacy_build
-          
+        mkdir -p ../frameworks
+        cp -R ios/opencv2.framework ../frameworks/
+              
     - name: Copy OpenCV Framework
       run: |
         mkdir -p frameworks
@@ -81,12 +83,6 @@ jobs:
         echo "THEOS_USE_LIBHOOKER=0" >> $GITHUB_ENV
         echo "TWEAK_USE_ELLEKIT=0" >> $GITHUB_ENV
     
-    - name: Build Package
-      id: build_package
-      run: |
-        make package FINALPACKAGE=1
-        echo "::set-output name=package::$(ls -t packages | head -n1)"
-
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
