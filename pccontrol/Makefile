@@ -15,7 +15,6 @@ pccontrol_LDFLAGS += -F$(THEOS_PROJECT_DIR)/frameworks
 
 pccontrol_PRIVATE_FRAMEWORKS = IOKit
 pccontrol_EXTRA_FRAMEWORKS = opencv2
-pccontrol_CODESIGN = ldid -Sentitlements.xml
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

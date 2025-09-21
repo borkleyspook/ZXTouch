@@ -10,7 +10,6 @@ appdelegate_FILES = Tweak.xm UIKeyboard.xm
 appdelegate_CFLAGS = -Wno-error -Wno-module-import-in-extern-c -fobjc-arc
 
 appdelegate_FRAMEWORKS = UIKit
-appdelegate_CODESIGN = ldid -Sentitlements.xml
 #appdelegate_CCFLAGS = -std=c++11
 
 include $(THEOS_MAKE_PATH)/tweak.mk
