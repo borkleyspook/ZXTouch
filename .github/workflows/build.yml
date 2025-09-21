@@ -26,22 +26,6 @@ jobs:
         echo ""
         echo "which ldid"
         which ldid
-        echo ""
-        echo "ldid -v"
-        ldid -v
-        echo ""
-        echo "Try manual signing to see if ldid works"
-        echo ""
-        echo "ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb"
-        ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb
-        echo ""
-        echo "codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb"
-        codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb
-        echo ""
-        echo "Check Theos version"
-        echo ""
-        echo "grep -r "THEOS_VERSION" ~/theos/ | head -1"
-        grep -r "THEOS_VERSION" ~/theos/ | head -1
         
     - name: Set up Theos
       run: |
@@ -151,6 +135,22 @@ jobs:
           fi
         done
         echo "✅ All verification checks completed"
+
+    - name: Verify Final Binaries
+      run: |
+        echo ""
+        echo "Try manual signing to see if ldid works"
+        echo ""
+        echo "ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb"
+        ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb
+        echo ""
+        echo "codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb"
+        codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb
+        echo ""
+        echo "Check Theos version"
+        echo ""
+        echo "grep -r "THEOS_VERSION" ~/theos/ | head -1"
+        grep -r "THEOS_VERSION" ~/theos/ | head -1
 
     - name: Create Release
       id: create_release
