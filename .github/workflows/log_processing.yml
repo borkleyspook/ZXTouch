@@ -6,6 +6,7 @@ on:
     types: [completed]
     branches: [master, rootless]  # Added to match the branches from build.yml
 
+# ADD PERMISSIONS TO ACCESS WORKFLOW LOGS
 permissions:
   actions: read
 
@@ -13,22 +14,38 @@ jobs:
   process-log:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}  # Checkout the same branch
+
       - name: Fetch workflow log
         uses: actions/github-script@v6
         id: fetch-log
         with:
           script: |
-            const { data: log } = await github.rest.actions.downloadWorkflowRunLogs({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.payload.workflow_run.id,
-            });
+            // Use the workflow run ID from the triggering event
+            const runId = context.payload.workflow_run.id;
             
-            // Save the log
-            const fs = require('fs');
-            fs.writeFileSync('${process.env.GITHUB_WORKSPACE}/raw_log.txt', log);
+            console.log('Fetching logs for run ID:', runId);
             
-            return 'Log downloaded';
+            try {
+              const { data: log } = await github.rest.actions.downloadWorkflowRunLogs({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: runId,
+              });
+              
+              // Save the log
+              const fs = require('fs');
+              fs.writeFileSync('${process.env.GITHUB_WORKSPACE}/raw_log.txt', log);
+              
+              console.log('Log downloaded successfully');
+              return 'Log downloaded';
+            } catch (error) {
+              console.error('Error downloading log:', error);
+              throw error;
+            }
 
       - name: Process and filter log
         run: |
@@ -42,6 +59,8 @@ jobs:
           echo "Workflow: ${{ github.event.workflow_run.name }}" >> stripped_log.txt
           echo "Run ID: ${{ github.event.workflow_run.id }}" >> stripped_log.txt
           echo "Status: ${{ github.event.workflow_run.conclusion }}" >> stripped_log.txt
+          echo "Branch: ${{ github.event.workflow_run.head_branch }}" >> stripped_log.txt
+          echo "Commit: ${{ github.event.workflow_run.head_sha }}" >> stripped_log.txt
           echo "=========================" >> stripped_log.txt
           cat filtered_log.txt >> stripped_log.txt
           
@@ -53,6 +72,6 @@ jobs:
       - name: Upload stripped log
         uses: actions/upload-artifact@v3
         with:
-          name: stripped-workflow-log
+          name: stripped-build-log-${{ github.event.workflow_run.id }}
           path: stripped_log.txt
           retention-days: 7
