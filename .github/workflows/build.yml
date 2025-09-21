@@ -16,12 +16,7 @@ jobs:
       
     - name: Install Dependencies
       run: |
-        brew install ldid xz make  # ← Added 'make' here
-        
-    - name: Install Modern GNU Make
-      run: |
-        # Install the latest GNU Make
-        brew install make
+        brew install ldid xz make dpkg
         # Add GNU Make to PATH (takes precedence over system make)
         echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
         
@@ -31,6 +26,26 @@ jobs:
         [ -d "$THEOS" ] && (cd "$THEOS" && git pull --recurse-submodules) || git clone --recursive https://github.com/theos/theos.git "$THEOS"
         echo "THEOS=$THEOS" >> $GITHUB_ENV
         echo "$THEOS/bin" >> $GITHUB_PATH
+
+    - name: Debug Entitlements
+      run: |
+        echo "=== Debugging Entitlements ==="
+        
+        # Check file existence
+        ls -la entitlements.*.xml 2>/dev/null || echo "No entitlements files found"
+        
+        # Validate XML if exists
+        if [ -f "entitlements.rootless.xml" ]; then
+            echo "=== entitlements.rootless.xml content ==="
+            cat entitlements.rootless.xml
+            echo "=== XML validation ==="
+            plutil -lint entitlements.rootless.xml || echo "XML validation failed"
+        fi
+        
+        # Test ldid manually
+        echo "=== Testing ldid ==="
+        echo "test" > /tmp/testfile
+        ldid -Sentitlements.rootless.xml /tmp/testfile 2>&1 || echo "ldid test failed"
 
     - name: Cache OpenCV
       uses: actions/cache@v3
@@ -90,6 +105,22 @@ jobs:
         make package FINALPACKAGE=1
         echo "::set-output name=package::$(ls -t packages | head -n1)"
 
+    - name: Verify Binaries and Theos Signing Configuration
+      run: |
+        echo "=== Theos Signing Configuration ==="
+        echo "TARGET_CODESIGN: $(make -p 2>/dev/null | grep '^TARGET_CODESIGN' | head -1 || echo 'Not set')"
+        echo "TARGET_CODESIGN_FLAGS: $(make -p 2>/dev/null | grep '^TARGET_CODESIGN_FLAGS' | head -1 || echo 'Not set')"
+        echo "THEOS_PACKAGE_SCHEME: $(make -p 2>/dev/null | grep '^THEOS_PACKAGE_SCHEME' | head -1 || echo 'Not set')"
+        
+        echo "=== Actual Binary Verification ==="
+        # Check if binaries got properly signed
+        find .theos/obj -name "*.dylib" -o -name "zxtouchb" | head -3 | while read binary; do
+            if [ -f "$binary" ]; then
+                echo "Checking: $(basename "$binary")"
+                ldid -e "$binary" 2>/dev/null | head -5 | grep -E "(DOCTYPE|platform-application)" && echo "✅ Has entitlements" || echo "❌ No entitlements found"
+            fi
+        done
+        
     - name: List Built Packages
       run: |
         echo "Built packages:"
@@ -98,17 +129,42 @@ jobs:
         echo "File details:"
         file packages/*
 
-    - name: Verify Binary Architectures
+    - name: Verify Final Binaries
       run: |
-        # Find the main binary and check its architectures
-        BINARY_PATH=$(find .theos -name "appdelegate.dylib" -o -name "zxtouchb" | head -n1)
-        if [ -n "$BINARY_PATH" ]; then
-          echo "Checking architectures for: $BINARY_PATH"
-          lipo -info "$BINARY_PATH"
-        else
-          echo "No binary found to check architectures"
-        fi
+        # Extract and check all in one go
+        mkdir -p /tmp/verify
+        dpkg -x packages/*.deb /tmp/verify
         
+        # Array of binaries to check
+        binaries=(
+          "/tmp/verify/var/jb/usr/bin/zxtouchb"
+          "/tmp/verify/var/jb/Library/MobileSubstrate/DynamicLibraries/appdelegate.dylib"
+          "/tmp/verify/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib"
+        )
+        
+        for binary in "${binaries[@]}"; do
+          if [ -f "$binary" ]; then
+            echo "================================================================================="
+            echo "=== Checking: $(basename $binary) ==="
+            echo ""
+            echo "Ldid (Entitlements) Check:"
+            ldid -e "$binary"
+            echo ""
+            echo "Codesign Check:"
+            codesign -dv --verbose=4 "$binary"
+            echo ""
+            echo "Lipo (Architectures) Check:"
+            lipo -info "$binary"
+            echo ""
+            echo "File (Properties) Check:"
+            file "$binary"
+            echo ""
+          else
+            echo "❌ Missing: $binary"
+          fi
+        done
+        echo "✅ All verification checks completed"
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1

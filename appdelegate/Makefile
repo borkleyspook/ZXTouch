@@ -1,7 +1,5 @@
 # Include common configuration
 include ../common.mk
-# Libhooker for tweaks
-THEOS_USE_LIBHOOKER = 1
 #export THEOS_DEVICE_IP = 192.168.0.6
 
 include $(THEOS)/makefiles/common.mk
