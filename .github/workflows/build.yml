@@ -98,35 +98,33 @@ jobs:
         echo "File details:"
         file packages/*
 
-    - name: Verify Binary Architectures
+    - name: Verify Final Binaries
       run: |
-        # Find the main binary and check its architectures
-        BINARY_PATH=$(find .theos -name "appdelegate.dylib" -o -name "zxtouchb" | head -n1)
-        if [ -n "$BINARY_PATH" ]; then
-          echo "Checking architectures for: $BINARY_PATH"
-          lipo -info "$BINARY_PATH"
-        else
-          echo "No binary found to check architectures"
-        fi
+        # Extract and check all in one go
+        mkdir -p /tmp/verify
+        dpkg -x packages/*.deb /tmp/verify
         
-    - name: Verify Code Signing
-      run: |
-        # Check if binaries are properly signed
-        find .theos -name "*.dylib" -o -name "zxtouchb" | head -3 | xargs -I {} ldid -e {}
-        echo "✅ Code signing verification completed"
-    
-    - name: Other Checks (May be redundant)
-      run: |
-        # Check if files are executable (basic test)
-        find .theos -name "*.dylib" -o -name "zxtouchb" | xargs -I {} file {}
+        # Array of binaries to check
+        binaries=(
+          "/tmp/verify/var/jb/usr/bin/zxtouchb"
+          "/tmp/verify/var/jb/Library/MobileSubstrate/DynamicLibraries/appdelegate.dylib"
+          "/tmp/verify/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib"
+        )
+        
+        for binary in "${binaries[@]}"; do
+          if [ -f "$binary" ]; then
+            echo "=== Checking: $(basename $binary) ==="
+            ldid -e "$binary"
+            codesign -dv --verbose=4 "$binary"
+            lipo -info "$binary"
+            file "$binary"
+            echo ""
+          else
+            echo "❌ Missing: $binary"
+          fi
+        done
+        echo "✅ All verification checks completed"
 
-        # Check architectures (ensure arm64/arm64e)
-        find .theos -name "*.dylib" -o -name "zxtouchb" | xargs -I {} lipo -info {}
-
-        # Check code signature status
-        find .theos -name "*.dylib" -o -name "zxtouchb" | xargs -I {} codesign -dv --verbose=4 {}
-        echo "✅ Other Checks Completed"
-    
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
