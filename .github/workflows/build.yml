@@ -16,7 +16,7 @@ jobs:
       
     - name: Install Dependencies
       run: |
-        brew install ldid xz make  # ← Added 'make' here
+        brew install ldid xz make dpkg
         
     - name: Install Modern GNU Make
       run: |
