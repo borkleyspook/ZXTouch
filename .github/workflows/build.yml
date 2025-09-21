@@ -136,7 +136,7 @@ jobs:
         done
         echo "✅ All verification checks completed"
 
-    - name: Verify Final Binaries
+    - name: More checks against stuff not getting signed
       run: |
         echo ""
         echo "Try manual signing to see if ldid works"
