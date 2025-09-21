@@ -90,6 +90,25 @@ jobs:
         make package FINALPACKAGE=1
         echo "::set-output name=package::$(ls -t packages | head -n1)"
 
+    - name: List Built Packages
+      run: |
+        echo "Built packages:"
+        ls -la packages/
+        echo ""
+        echo "File details:"
+        file packages/*
+
+    - name: Verify Binary Architectures
+      run: |
+        # Find the main binary and check its architectures
+        BINARY_PATH=$(find .theos -name "appdelegate.dylib" -o -name "zxtouchb" | head -n1)
+        if [ -n "$BINARY_PATH" ]; then
+          echo "Checking architectures for: $BINARY_PATH"
+          lipo -info "$BINARY_PATH"
+        else
+          echo "No binary found to check architectures"
+        fi
+        
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -101,12 +120,11 @@ jobs:
         draft: false
         prerelease: false
                             
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload All Packages
+      uses: svenstaro/upload-release-action@v2
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}          
-        asset_path: ./packages/${{ steps.build_package.outputs.package }}
-        asset_name: ${{ steps.build_package.outputs.package }}
-        asset_content_type: application/vnd.debian.binary-package
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: packages/*.deb
+        file_glob: true
+        tag: ${{ github.event.release.tag_name }}
+        overwrite: true
