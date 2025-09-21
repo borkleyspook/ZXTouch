@@ -69,10 +69,10 @@ jobs:
     #     # Copy the built OpenCV framework
     #     cp -R opencv-repo/ios/opencv2.framework frameworks/
 
-    - name: Use libhooker for CI build
+    - name: Use Substrate compatibility
       run: |
-        # Override ElleKit setting for CI environment
-        echo "THEOS_USE_LIBHOOKER=1" >> $GITHUB_ENV
+        # Disable libhooker and ellekit to use default Substrate
+        echo "THEOS_USE_LIBHOOKER=0" >> $GITHUB_ENV
         echo "TWEAK_USE_ELLEKIT=0" >> $GITHUB_ENV
     
     - name: Build Package
