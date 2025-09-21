@@ -17,13 +17,31 @@ jobs:
     - name: Install Dependencies
       run: |
         brew install ldid xz make dpkg
-        
-    - name: Install Modern GNU Make
-      run: |
-        # Install the latest GNU Make
-        brew install make
         # Add GNU Make to PATH (takes precedence over system make)
         echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
+
+    - name: Ldid Check
+      run: |
+        echo "Check if ldid is available and working:"
+        echo ""
+        echo "which ldid"
+        which ldid
+        echo ""
+        echo "ldid -v"
+        ldid -v
+        echo ""
+        echo "Try manual signing to see if ldid works"
+        echo ""
+        echo "ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb"
+        ldid -S .theos/obj/install/var/jb/usr/bin/zxtouchb
+        echo ""
+        echo "codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb"
+        codesign -dv --verbose=4 .theos/obj/install/var/jb/usr/bin/zxtouchb
+        echo ""
+        echo "Check Theos version"
+        echo ""
+        echo "grep -r "THEOS_VERSION" ~/theos/ | head -1"
+        grep -r "THEOS_VERSION" ~/theos/ | head -1
         
     - name: Set up Theos
       run: |
