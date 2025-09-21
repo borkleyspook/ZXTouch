@@ -264,7 +264,10 @@ static BOOL isPlaying = false;
         return;
     }
     // Fix the command with rootless paths
-    NSString *commandToRun = [NSString stringWithFormat:@"sudo zxtouchb -e \"python3 -u \\\"%@\\\" 2>&1 | %@/add_datetime.sh\" >> %@/output", filePath, ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime"), ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime")];
+    NSString *zxtouchbPath = ROOT_PATH_NS(@"/usr/bin/zxtouchb");
+    NSString *scriptRuntimePath = ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime");
+    NSString *commandToRun = [NSString stringWithFormat:@"%@ -e \"python3 -u \\\"%@\\\" 2>&1 | %@/add_datetime.sh\" >> %@/output", 
+    zxtouchbPath, filePath, scriptRuntimePath, scriptRuntimePath];
     NSLog(@"com.zjx.springboard: command to run for running py file %@", commandToRun);
 
     // here I made it run in background because of a weird thing: ios objc cannot call second system() if the first system() does not return
@@ -355,8 +358,10 @@ static BOOL isPlaying = false;
     }
     else if (currentScriptType == 2)
     {
-        // kill all python3 process
-        system2("sudo zxtouchb -e \"killall -9 python3\"", NULL, NULL);
+        // FIXED: kill all python3 process without sudo
+        NSString *killCommand = [NSString stringWithFormat:@"%@ -e \"killall -9 python3\"", 
+            ROOT_PATH_NS(@"/usr/bin/zxtouchb")];
+        system2([killCommand UTF8String], NULL, NULL);
         [self clear];
     }
     else

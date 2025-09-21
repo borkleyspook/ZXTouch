@@ -362,8 +362,11 @@ Boolean init()
         //[_webServer startWithPort:8080 bonjourName:nil];
         //NSLog(@"com.zjx.springboard: Visit %@ in your web browser", _webServer.serverURL);
 
-        //system("sudo zxtouchb -e \"chown -R mobile:mobile /var/mobile/Documents/com.zjx.zxtouchsp\"");
-        //system("sudo zxtouchb -e \"chown -R mobile:mobile /var/mobile/Library/ZXTouch\"");
+        // For simple chmod operations (more appropriate for rootless)
+        // char *args[] = {"chmod", "-R", "755", "/var/mobile/Documents/com.zjx.zxtouchsp", NULL};
+        // posix_spawn(NULL, "/usr/bin/chmod", NULL, NULL, args, NULL);
+        // char *args2[] = {"chmod", "-R", "755", "/var/mobile/Library/ZXTouch", NULL};
+        // posix_spawn(NULL, "/usr/bin/chmod", NULL, NULL, args2, NULL);
 
         socketServer();
     });
