@@ -9,6 +9,7 @@ on:
 # ADD PERMISSIONS TO ACCESS WORKFLOW LOGS
 permissions:
   actions: read
+  contents: write  # To upload artifacts (required for actions/upload-artifact)
 
 jobs:
   process-log:

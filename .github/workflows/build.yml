@@ -5,7 +5,8 @@ on:
     
 permissions:
   actions: read
-
+  contents: write  # To upload artifacts (required for actions/upload-artifact)
+  
 jobs:
   build:
     name: Build App
