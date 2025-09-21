@@ -17,6 +17,7 @@
 #include "UpdateCache.h"
 #include "Screen.h"
 #include "NSTask.h"
+#import <rootless.h>
 
 extern CFRunLoopRef recordRunLoop;
 
