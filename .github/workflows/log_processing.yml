@@ -6,6 +6,9 @@ on:
     types: [completed]
     branches: [master, rootless]  # Added to match the branches from build.yml
 
+permissions:
+  actions: read
+
 jobs:
   process-log:
     runs-on: ubuntu-latest

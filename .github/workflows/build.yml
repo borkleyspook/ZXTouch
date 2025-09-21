@@ -3,6 +3,9 @@ on:
   push:
     branches: [master, rootless]
     
+permissions:
+  actions: read
+
 jobs:
   build:
     name: Build App
