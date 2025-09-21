@@ -57,7 +57,7 @@ jobs:
       run: |
         mkdir -p frameworks
         # Copy from cache or fresh build
-        cp -R opencv-repo/ios/opencv2.framework frameworks/
+        cp -R frameworks/opencv2.framework frameworks/
 
     - name: Install Theos Headers
       run: |
