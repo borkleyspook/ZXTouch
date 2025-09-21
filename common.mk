@@ -13,7 +13,7 @@ TARGET_CODESIGN_FLAGS = -S
 
 # For rootless, use entitlements
 ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
-    TARGET_CODESIGN_FLAGS = -Sentitlements.plist
+    TARGET_CODESIGN_FLAGS = -S
 else
     TARGET_CODESIGN_FLAGS = -S
 endif
