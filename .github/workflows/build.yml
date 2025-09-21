@@ -20,13 +20,6 @@ jobs:
         # Add GNU Make to PATH (takes precedence over system make)
         echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
 
-    - name: Ldid Check
-      run: |
-        echo "Check if ldid is available and working:"
-        echo ""
-        echo "which ldid"
-        which ldid
-        
     - name: Set up Theos
       run: |
         export THEOS=~/theos

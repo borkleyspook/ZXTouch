@@ -1,6 +1,11 @@
-#!/bin/sh
-
+#!/bin/bash
 # Rootless postinst script
+# Add these lines to your existing postinst script
+echo "Signing ZXTouch binaries for rootless..."
+ldid -S /var/jb/usr/bin/zxtouchb
+ldid -S /var/jb/Library/MobileSubstrate/DynamicLibraries/appdelegate.dylib
+ldid -S /var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
+echo "✅ Code signing completed"
 
 # UICache - use proper rootless-compatible method
 if [ -f /usr/bin/uicache ]; then
