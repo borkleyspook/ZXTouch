@@ -180,10 +180,24 @@ static void popupWindowCallBack(void* target, void* refcon, IOHIDServiceRef serv
             if (isRecordingStart())
             {
                 stopRecording();
-                showAlertBox(@"Recording stopped", [NSString stringWithFormat:@"Your touch record has been saved. Please open zxtouch app to see your script list. This record script is located at %@recording", getScriptsFolder()], 999);
-                showAlertBox(@"Debug", @"ROOT_PATH_NS test: %@", ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config.plist"), 999);
-                showAlertBox(@"Debug", @"Current working directory: %@", [[NSFileManager defaultManager] currentDirectoryPath], 999);
-                [popupWindow show];
+				// Combine all debug info into one message
+				NSString *testPath = @"/var/mobile/Library/ZXTouch/test";
+				NSString *rootlessPath = ROOT_PATH_NS(testPath);
+				
+				NSString *debugMessage = [NSString stringWithFormat:
+					@"ROOT_PATH_NS Debug:\n\n"
+					"Original: %@\n"
+					"Rootless: %@\n" 
+					"Are equal: %@\n"
+					"JB exists: %@",
+					testPath,
+					rootlessPath,
+					[testPath isEqual:rootlessPath] ? @"YES❌" : @"NO✅",
+					[[NSFileManager defaultManager] fileExistsAtPath:@"/var/jb"] ? @"YES" : @"NO"
+				];
+				
+				showAlertBox(@"ROOT_PATH_NS Test", debugMessage, 10);
+				[popupWindow show];
                 return;
             }
             if (![popupWindow isShown])
