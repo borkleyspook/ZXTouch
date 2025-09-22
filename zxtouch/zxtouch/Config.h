@@ -12,13 +12,13 @@
 #import <rootless.h>
 
 // Use ROOT_PATH_NS for NSString paths and ROOT_PATH for C strings
-#define SCRIPTS_PATH ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/scripts/")
-#define RUNTIME_OUTPUT_PATH ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/output")
+#define SCRIPTS_PATH ROOT_PATH_NS(@"/mobile/Library/ZXTouch/scripts/")
+#define RUNTIME_OUTPUT_PATH ROOT_PATH_NS(@"/mobile/Library/ZXTouch/coreutils/ScriptRuntime/output")
 
-#define SPRINGBOARD_CONFIG_PATH ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config/tweak/config.plist")
+#define SPRINGBOARD_CONFIG_PATH ROOT_PATH_NS(@"/mobile/Library/ZXTouch/config/tweak/config.plist")
 
-#define SCRIPT_PLAY_CONFIG_PATH ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config/tweak/script_play_settings.plist")
-#define ACTIVATOR_CONFIG_PATH ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config/tweak/activator.plist")
+#define SCRIPT_PLAY_CONFIG_PATH ROOT_PATH_NS(@"/mobile/Library/ZXTouch/config/tweak/script_play_settings.plist")
+#define ACTIVATOR_CONFIG_PATH ROOT_PATH_NS(@"/mobile/Library/ZXTouch/config/tweak/activator.plist")
 
 #define TOUCH_INDICATOR_DEFAULT_ALPHA 0.7
 
