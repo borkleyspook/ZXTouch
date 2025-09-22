@@ -1,17 +1,26 @@
 #!/bin/sh
-# Detect rootless environment dynamically
-if [ -d "/var/jb" ]; then
+
+# Use Theos's rootless path resolution in shell scripts too
+if [ -d "/private/preboot" ] && [ -n "$(find /private/preboot -name procursus -type d 2>/dev/null)" ]; then
+    # Dopamine-style rootless
+    PATH_PREFIX="$(find /private/preboot -name procursus -type d 2>/dev/null | head -1)"
+    TYPE_PREFIX="Dopamine-style rootless"
+    echo "Dopamine-style rootless environment detected"
+elif [ -d "/var/jb" ]; then
+    # Simple rootless (palera1n, etc)
     PATH_PREFIX="/var/jb"
-    TYPE_PREFIX="less"
-    echo "Rootless environment detected"
+    TYPE_PREFIX="simple rootless (palera1n, etc)"
+    echo "Simple rootless (palera1n, etc) environment detected"
 else
+    # Rootful
     PATH_PREFIX=""
-    TYPE_PREFIX="full"
+    TYPE_PREFIX="rootfull"
     echo "Traditional rootful environment"
 fi
 
 # Use dynamic paths
 ZXTOUCH_PATH="${PATH_PREFIX}/var/mobile/Library/ZXTouch"
+echo "Using ZXTouch path: $ZXTOUCH_PATH"
 BIN_PATH="${PATH_PREFIX}/usr/bin"
 APPLICATIONS_PATH="${PATH_PREFIX}/Applications"
 SUBSTRATE_PATH="${PATH_PREFIX}/Library/MobileSubstrate/DynamicLibraries"
@@ -62,4 +71,4 @@ else
     echo "⚠️ add_datetime.sh not found at ${ZXTOUCH_PATH}/coreutils/ScriptRuntime/add_datetime.sh"
 fi
 
-echo "Installation completed successfully for root${TYPE_PREFIX} environment"
+echo "Installation completed successfully for a ${TYPE_PREFIX} environment"
