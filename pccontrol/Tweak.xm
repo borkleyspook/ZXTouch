@@ -181,6 +181,8 @@ static void popupWindowCallBack(void* target, void* refcon, IOHIDServiceRef serv
             {
                 stopRecording();
                 showAlertBox(@"Recording stopped", [NSString stringWithFormat:@"Your touch record has been saved. Please open zxtouch app to see your script list. This record script is located at %@recording", getScriptsFolder()], 999);
+                showAlertBox(@"Debug", @"ROOT_PATH_NS test: %@", ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config.plist"), 999);
+                showAlertBox(@"Debug", @"Current working directory: %@", [[NSFileManager defaultManager] currentDirectoryPath], 999);
                 [popupWindow show];
                 return;
             }
@@ -233,8 +235,6 @@ Boolean initConfig()
 {
     // read config file
     // check whether config file exist
-	showAlertBox(@"Debug", @"ROOT_PATH_NS test: %@", ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config.plist"), 999);
-	showAlertBox(@"Debug", @"Current working directory: %@", [[NSFileManager defaultManager] currentDirectoryPath], 999);
     NSString *configFilePath = getCommonConfigFilePath();
 
     if (![[NSFileManager defaultManager] fileExistsAtPath:configFilePath]) // if missing, then use the default value
