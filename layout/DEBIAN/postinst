@@ -1,49 +1,65 @@
 #!/bin/sh
-
-# Rootless postinst script
-# Add these lines to your existing postinst script
-echo "Signing ZXTouch binaries for rootless..."
-ldid -S /var/jb/usr/bin/zxtouchb
-ldid -S /var/jb/Applications/zxtouch.app/zxtouch
-ldid -S /var/jb/Library/MobileSubstrate/DynamicLibraries/appdelegate.dylib
-ldid -S /var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
-echo "✅ Code signing completed"
-
-# UICache - use proper rootless-compatible method
-if [ -f /usr/bin/uicache ]; then
-    /usr/bin/uicache
-elif [ -f /var/jb/usr/bin/uicache ]; then
-    /var/jb/usr/bin/uicache
+# Detect rootless environment dynamically
+if [ -d "/var/jb" ]; then
+    PATH_PREFIX="/var/jb"
+    TYPE_PREFIX="less"
+    echo "Rootless environment detected"
+else
+    PATH_PREFIX=""
+    TYPE_PREFIX="full"
+    echo "Traditional rootful environment"
 fi
 
-# Remove sudoers entry - not needed in rootless
-# sudo doesn't exist in rootless environments
+# Use dynamic paths
+ZXTOUCH_PATH="${PATH_PREFIX}/var/mobile/Library/ZXTouch"
+BIN_PATH="${PATH_PREFIX}/usr/bin"
+APPLICATIONS_PATH="${PATH_PREFIX}/Applications"
+SUBSTRATE_PATH="${PATH_PREFIX}/Library/MobileSubstrate/DynamicLibraries"
 
-# Set permissions for ZXTouch directory
-ZXTOUCH_PATH="/var/mobile/Library/ZXTouch"
+echo "Signing ZXTouch binaries..."
+# Add existence checks before signing
+if [ -f "${BIN_PATH}/zxtouchb" ]; then
+    ldid -S "${BIN_PATH}/zxtouchb"
+    echo "✅ Signed zxtouchb"
+fi
+
+if [ -f "${APPLICATIONS_PATH}/zxtouch.app/zxtouch" ]; then
+    ldid -S "${APPLICATIONS_PATH}/zxtouch.app/zxtouch"
+    echo "✅ Signed zxtouch.app binary"
+fi
+
+if [ -f "${SUBSTRATE_PATH}/appdelegate.dylib" ]; then
+    ldid -S "${SUBSTRATE_PATH}/appdelegate.dylib"
+    echo "✅ Signed appdelegate.dylib"
+fi
+
+if [ -f "${SUBSTRATE_PATH}/pccontrol.dylib" ]; then
+    ldid -S "${SUBSTRATE_PATH}/pccontrol.dylib"
+    echo "✅ Signed pccontrol.dylib"
+fi
+
+echo "✅ Code signing completed"
+
+"${BIN_PATH}/uicache"
+
+# Handle ZXTouch directory
 if [ -d "$ZXTOUCH_PATH" ]; then
-    # Use chmod instead of chown (ownership changes restricted in rootless)
+    echo "Setting permissions for: $ZXTOUCH_PATH"
+    chown -R mobile:mobile "$ZXTOUCH_PATH" 2>/dev/null || echo "⚠️ Could not change ownership (may be normal in rootless)"
     chmod -R 755 "$ZXTOUCH_PATH"
-    
-    # For rootless, the mobile user should already have appropriate access
-    # without needing ownership changes
+else
+    echo "Creating directory: $ZXTOUCH_PATH"
+    mkdir -p "$ZXTOUCH_PATH"
+    chown -R mobile:mobile "$ZXTOUCH_PATH" 2>/dev/null || echo "⚠️ Could not change ownership (may be normal in rootless)"
+    chmod -R 755 "$ZXTOUCH_PATH"
 fi
 
 # Make add_datetime.sh executable
-if [ -f "/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/add_datetime.sh" ]; then
-    chmod +x "/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/add_datetime.sh"
+if [ -f "${ZXTOUCH_PATH}/coreutils/ScriptRuntime/add_datetime.sh" ]; then
+    chmod +x "${ZXTOUCH_PATH}/coreutils/ScriptRuntime/add_datetime.sh"
+    echo "✅ Made add_datetime.sh executable"
+else
+    echo "⚠️ add_datetime.sh not found at ${ZXTOUCH_PATH}/coreutils/ScriptRuntime/add_datetime.sh"
 fi
 
-# Additional rootless considerations
-# Check if we're in a rootless environment
-if [ -d "/var/jb" ]; then
-    echo "Rootless environment detected"
-    
-    # Ensure proper paths exist
-    if [ ! -d "/var/mobile/Library/ZXTouch" ]; then
-        mkdir -p "/var/mobile/Library/ZXTouch"
-        chmod 755 "/var/mobile/Library/ZXTouch"
-    fi
-fi
-
-echo "Installation completed for rootless jailbreak"
+echo "Installation completed successfully for root${TYPE_PREFIX} environment"
