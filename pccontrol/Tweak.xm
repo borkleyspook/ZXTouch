@@ -233,6 +233,8 @@ Boolean initConfig()
 {
     // read config file
     // check whether config file exist
+	showAlertBox(@"Debug", @"ROOT_PATH_NS test: %@", ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config.plist"), 999);
+	showAlertBox(@"Debug", @"Current working directory: %@", [[NSFileManager defaultManager] currentDirectoryPath], 999);
     NSString *configFilePath = getCommonConfigFilePath();
 
     if (![[NSFileManager defaultManager] fileExistsAtPath:configFilePath]) // if missing, then use the default value
