@@ -19,4 +19,4 @@ pccontrol_EXTRA_FRAMEWORKS = opencv2
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "chown -R mobile:mobile /var/jb/var/mobile/Library/ZXTouch && killall -9 SpringBoard;"
+	install.exec "bash $(THEOS_PROJECT_DIR)/fix-permissions.sh"
