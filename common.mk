@@ -8,6 +8,9 @@ STRIP = 0
 TARGET_CODESIGN = ldid
 # Set default signing flags
 TARGET_CODESIGN_FLAGS = -S
+# common.mk
+export ROOT_PATH_NS = /var/jb
+export TARGET_CFLAGS += -DROOT_PATH_NS='@"$(ROOT_PATH_NS)"'
 # For rootless, use entitlements
 ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
     TARGET_CODESIGN_FLAGS = -S$(THEOS_PROJECT_DIR)/entitlements.rootless.xml
