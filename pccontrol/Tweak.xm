@@ -233,6 +233,8 @@ Boolean initConfig()
 {
     // read config file
     // check whether config file exist
+	NSLog(@"SKIBIDI ROOT_PATH_NS test: %@", ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/config.plist"));
+	NSLog(@"SKIBIDI Current working directory: %@", [[NSFileManager defaultManager] currentDirectoryPath]);
     NSString *configFilePath = getCommonConfigFilePath();
 
     if (![[NSFileManager defaultManager] fileExistsAtPath:configFilePath]) // if missing, then use the default value
