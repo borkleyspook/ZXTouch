@@ -72,11 +72,17 @@ else
 fi
 
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ]; then
-    # Create a symbolic link so the legacy path points to the rootless directory
-    if [ ! -L /var/mobile/Library/ZXTouch ]; then
-        ln -s /var/jb/var/mobile/Library/ZXTouch /var/mobile/Library/ZXTouch
+    # Delete any existing file, directory, or link at the legacy path.
+    # This prevents the "nesting" issue and ensures the link is created cleanly.
+    if [ -e /var/mobile/Library/ZXTouch ] || [ -L /var/mobile/Library/ZXTouch ]; then
+        rm -rf /var/mobile/Library/ZXTouch
     fi
 
+    # Create the symbolic link at the Library level.
+    # Legacy Path: /var/mobile/Library/ZXTouch
+    # Rootless Path: /var/jb/var/mobile/Library/ZXTouch
+    ln -s /var/jb/var/mobile/Library/ZXTouch /var/mobile/Library/ZXTouch
+	
     if [ ! -L /usr/lib/python3.7 ]; then
         ln -s /var/jb/usr/lib/python3.7 /usr/lib/python3.7
     fi
