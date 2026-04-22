@@ -71,4 +71,16 @@ else
     echo "⚠️ add_datetime.sh not found at ${ZXTOUCH_PATH}/coreutils/ScriptRuntime/add_datetime.sh"
 fi
 
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ]; then
+    # Create a symbolic link so the legacy path points to the rootless directory
+    if [ ! -L /var/mobile/Library/ZXTouch ]; then
+        ln -s /var/jb/var/mobile/Library/ZXTouch /var/mobile/Library/ZXTouch
+    fi
+
+    # Run the permission fix script included in the repository
+    if [ -f /var/jb/var/mobile/Library/ZXTouch/fix-permissions.sh ]; then
+        sh /var/jb/var/mobile/Library/ZXTouch/fix-permissions.sh
+    fi
+fi
+
 echo "Installation completed successfully for a ${TYPE_PREFIX} environment"
