@@ -77,6 +77,10 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ]; then
         ln -s /var/jb/var/mobile/Library/ZXTouch /var/mobile/Library/ZXTouch
     fi
 
+    if [ ! -L /usr/lib/python3.7 ]; then
+        ln -s /var/jb/usr/lib/python3.7 /usr/lib/python3.7
+    fi
+
     # Run the permission fix script included in the repository
     if [ -f /var/jb/var/mobile/Library/ZXTouch/fix-permissions.sh ]; then
         sh /var/jb/var/mobile/Library/ZXTouch/fix-permissions.sh
