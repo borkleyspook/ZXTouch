@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7m
+#!/var/jb/usr/bin/python3.7m
 # -*- python -*-
 
 # Keep this script in sync with python-config.sh.in

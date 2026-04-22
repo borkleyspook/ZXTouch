@@ -48,13 +48,13 @@ class InstallScriptsTestCase(support.TempdirManager,
             finally:
                 f.close()
 
-        write_script("script1.py", ("#! /usr/bin/env python2.3\n"
+        write_script("script1.py", ("#! /var/jb/usr/bin/env python2.3\n"
                                     "# bogus script w/ Python sh-bang\n"
                                     "pass\n"))
-        write_script("script2.py", ("#!/usr/bin/python\n"
+        write_script("script2.py", ("#!/var/jb/usr/bin/python\n"
                                     "# bogus script w/ Python sh-bang\n"
                                     "pass\n"))
-        write_script("shell.sh", ("#!/bin/sh\n"
+        write_script("shell.sh", ("#!/var/jb/bin/sh\n"
                                   "# bogus shell script w/ sh-bang\n"
                                   "exit 0\n"))
 
