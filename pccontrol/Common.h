@@ -8,7 +8,16 @@
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 #define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
 #define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+#import <Foundation/Foundation.h>
 
+// This allows any file that imports Common.h to use the function
+static inline NSString* get_rootless_path(NSString* path) {
+    if (!path) return nil;
+    if ([path hasPrefix:@"/var/jb/"]) {
+        return path;
+    }
+    return [@"/var/jb" stringByAppendingString:path];
+}
 
 @interface SpringBoard : UIApplication
 -(int)_frontMostAppOrientation;

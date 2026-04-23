@@ -10,18 +10,6 @@
 
 static BOOL isPlaying = false;
 
-static NSString* get_rootless_path(NSString* path) {
-    if (!path) return nil;
-    
-    // If the path already starts with /var/jb/, return it as is
-    if ([path hasPrefix:@"/var/jb/"]) {
-        return path;
-    }
-    
-    // Otherwise, prepend the rootless prefix
-    return [@"/var/jb" stringByAppendingString:path];
-}
-
 @implementation ScriptPlayer
 {
     int repeatTime;

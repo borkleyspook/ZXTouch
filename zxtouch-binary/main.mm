@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include "Common.h"
 #include "NSTask.h" // in ~/theos/include/NSTask.h
 
 #define SPRINGBOARD_PORT 6000
@@ -114,8 +115,10 @@ int executeCommand()
         NSTask *task = [[NSTask alloc] init];
 
         // 设置执行的命令和参数
-        [task setLaunchPath:@"/bin/sh"];
-        [task setArguments:@[@"-c", [NSString stringWithFormat:@"%@", parameterArr[2]]]];
+        // FIX: Redirect the shell path to the rootless location
+        // Use the function we created earlier: get_rootless_path(@"/bin/sh")
+        NSString *shellPath = get_rootless_path(@"/bin/sh");
+        [task setLaunchPath:shellPath]; 
 
         // 设置输出管道，如果需要获取命令的输出
         NSPipe *pipe = [NSPipe pipe];
