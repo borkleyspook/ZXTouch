@@ -121,35 +121,35 @@ int executeCommand()
         [task setLaunchPath:shellPath]; 
 
         // Use index 2 as established in your command structure
-        [task setArguments:@[@"-c", parameterArr[1]]];
+        [task setArguments:@[@"-c", parameterArr[2]]];
 
-        NSPipe *outputPipe = [NSPipe pipe];
-        NSPipe *errorPipe = [NSPipe pipe]; // Create error pipe
-        [task setStandardOutput:outputPipe];
-        [task setStandardError:errorPipe]; // Capture errors
+        NSPipe *pipe = [NSPipe pipe];
+        [task setStandardOutput:pipe];
+        
+        // RECOMMENDED: Capture errors so you know WHY it might be failing
+        NSPipe *errorPipe = [NSPipe pipe];
+        [task setStandardError:errorPipe];
 
         [task launch];
         [task waitUntilExit];
 
-        // Read Standard Output
-        NSData *outData = [[outputPipe fileHandleForReading] readDataToEndOfFile];
-        NSString *output = [[NSString alloc] initWithData:outData encoding:NSUTF8StringEncoding];
+        // Read the output
+        NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile];
+        NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 
-        // Read Standard Error
-        NSData *errData = [[errorPipe fileHandleForReading] readDataToEndOfFile];
-        NSString *errorOutput = [[NSString alloc] initWithData:errData encoding:NSUTF8StringEncoding];
-
-        // Print to terminal immediately
+        // FIX 2: Use printf to send data to the Terminal and your ">>" redirection
         if (output.length > 0) {
-            printf("STDOUT: %s\n", [output UTF8String]);
+            printf("%s\n", [output UTF8String]);
         }
-        if (errorOutput.length > 0) {
+
+        // Check for errors if the output was empty
+        NSData *errorData = [[errorPipe fileHandleForReading] readDataToEndOfFile];
+        if (errorData.length > 0) {
+            NSString *errorOutput = [[NSString alloc] initWithData:errorData encoding:NSUTF8StringEncoding];
             printf("STDERR: %s\n", [errorOutput UTF8String]);
         }
         
-        // Also print the exit status
-        printf("Task Exited with status: %d\n", [task terminationStatus]);
-        fflush(stdout); 
+        fflush(stdout); // Ensure the terminal updates immediately
     }
     
     //return system([[NSString stringWithFormat:@"%@", parameterArr[2]] UTF8String]);
