@@ -272,7 +272,7 @@ static BOOL isPlaying = false;
     NSString *zxtouchbPath = ROOT_PATH_NS(@"/usr/bin/zxtouchb");
     // showAlertBox(@"Success", zxtouchbPath, 999);
     NSString *scriptRuntimePath = ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime");
-    showAlertBox(@"Success", scriptRuntimePath, 999);
+    // showAlertBox(@"Success", scriptRuntimePath, 999);
     NSString *commandToRun = [NSString stringWithFormat:@"%@ -e \"PYTHONPATH=/var/jb/usr/lib/python3/site-packages /var/jb/usr/bin/python3 -u \\\"%@\\\" 2>&1 | %@/add_datetime.sh\" >> %@/output", zxtouchbPath, filePath, scriptRuntimePath, scriptRuntimePath];
     // /var/jb/usr/bin/zxtouchb -e "PYTHONPATH=/var/jb/usr/lib/python3/site-packages /var/jb/usr/bin/python3 -u '/var/jb/var/mobile/Library/ZXTouch/scripts/examples/Device Info.bdl/device_info.py' 2>&1 | /var/jb/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/add_datetime.sh" >> /var/jb/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime/output
     NSLog(@"com.zjx.springboard: command to run for running py file %@", commandToRun);
