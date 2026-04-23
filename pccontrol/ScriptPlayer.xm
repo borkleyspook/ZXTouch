@@ -256,6 +256,10 @@ static BOOL isPlaying = false;
         isPlaying = false;
         return;
     }
+    else
+    {
+        showAlertBox(@"Success", @"/usr/bin/python3 found.", 999);
+    }
 
     if (![[NSFileManager defaultManager] fileExistsAtPath:filePath])
     {
@@ -265,10 +269,12 @@ static BOOL isPlaying = false;
     }
     // Fix the command with rootless paths
     NSString *zxtouchbPath = ROOT_PATH_NS(@"/usr/bin/zxtouchb");
+    showAlertBox(@"Success", zxtouchbPath, 999);
     NSString *scriptRuntimePath = ROOT_PATH_NS(@"/var/mobile/Library/ZXTouch/coreutils/ScriptRuntime");
-    NSString *commandToRun = [NSString stringWithFormat:@"%@ -e \"python3 -u \\\"%@\\\" 2>&1 | %@/add_datetime.sh\" >> %@/output", 
-    zxtouchbPath, filePath, scriptRuntimePath, scriptRuntimePath];
+    showAlertBox(@"Success", scriptRuntimePath, 999);
+    NSString *commandToRun = [NSString stringWithFormat:@"%@ -e \"python3 -u \\\"%@\\\" 2>&1 | %@/add_datetime.sh\" >> %@/output", zxtouchbPath, filePath, scriptRuntimePath, scriptRuntimePath];
     NSLog(@"com.zjx.springboard: command to run for running py file %@", commandToRun);
+    showAlertBox(@"Success", commandToRun, 999);
 
     // here I made it run in background because of a weird thing: ios objc cannot call second system() if the first system() does not return
     //scriptPlayForceStop = true;
@@ -279,6 +285,7 @@ static BOOL isPlaying = false;
 
 - (void)replay:(NSTimer*)nstimer {
     NSLog(@"com.zjx.springboard: script is replaying...");
+    showAlertBox(@"Success", @"com.zjx.springboard: script is replaying...", 999);
     NSError *err = nil;
 
     [self runScript:&err];
@@ -289,6 +296,7 @@ static BOOL isPlaying = false;
 -(void) playHasStopped
 {
     NSLog(@"com.zjx.springboard: script has finished");
+    showAlertBox(@"Success", @"com.zjx.springboard: script has finished", 999);
 
     // check whether need to replay
     if (repeatTime != 0)
