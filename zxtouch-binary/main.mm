@@ -120,24 +120,37 @@ int executeCommand()
         NSString *shellPath = get_rootless_path(@"/bin/sh");
         [task setLaunchPath:shellPath]; 
 
-        // 设置输出管道，如果需要获取命令的输出
-        NSPipe *pipe = [NSPipe pipe];
-        [task setStandardOutput:pipe];
+        // Use index 2 as established in your command structure
+        [task setArguments:@[@"-c", parameterArr[1]]];
 
-        // 启动任务
+        NSPipe *outputPipe = [NSPipe pipe];
+        NSPipe *errorPipe = [NSPipe pipe]; // Create error pipe
+        [task setStandardOutput:outputPipe];
+        [task setStandardError:errorPipe]; // Capture errors
+
         [task launch];
-
-        // 等待任务完成
         [task waitUntilExit];
 
-        // 如果需要获取命令的输出，可以使用以下代码
-        NSFileHandle *fileHandle = [pipe fileHandleForReading];
-        NSData *data = [fileHandle readDataToEndOfFile];
-        NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        NSLog(@"Command Output:\n%@", output);
-    }
+        // Read Standard Output
+        NSData *outData = [[outputPipe fileHandleForReading] readDataToEndOfFile];
+        NSString *output = [[NSString alloc] initWithData:outData encoding:NSUTF8StringEncoding];
 
-    return 0;
+        // Read Standard Error
+        NSData *errData = [[errorPipe fileHandleForReading] readDataToEndOfFile];
+        NSString *errorOutput = [[NSString alloc] initWithData:errData encoding:NSUTF8StringEncoding];
+
+        // Print to terminal immediately
+        if (output.length > 0) {
+            printf("STDOUT: %s\n", [output UTF8String]);
+        }
+        if (errorOutput.length > 0) {
+            printf("STDERR: %s\n", [errorOutput UTF8String]);
+        }
+        
+        // Also print the exit status
+        printf("Task Exited with status: %d\n", [task terminationStatus]);
+        fflush(stdout); 
+    }
     
     //return system([[NSString stringWithFormat:@"%@", parameterArr[2]] UTF8String]);
 }
