@@ -153,7 +153,7 @@ pid_t system2(const char * command, int * infp, int * outfp)
             ::close(i);
 
         setsid();
-        execl([get_rootless_path(@"/bin/sh") UTF8String], "sh", "-c", [command UTF8String], NULL);
+        execl([get_rootless_path(@"/bin/sh") UTF8String], "sh", "-c", command, NULL);
         _exit(1);
     }
 
