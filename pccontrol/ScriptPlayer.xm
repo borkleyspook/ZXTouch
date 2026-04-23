@@ -10,6 +10,18 @@
 
 static BOOL isPlaying = false;
 
+static NSString* get_rootless_path(NSString* path) {
+    if (!path) return nil;
+    
+    // If the path already starts with /var/jb/, return it as is
+    if ([path hasPrefix:@"/var/jb/"]) {
+        return path;
+    }
+    
+    // Otherwise, prepend the rootless prefix
+    return [@"/var/jb" stringByAppendingString:path];
+}
+
 @implementation ScriptPlayer
 {
     int repeatTime;
@@ -33,7 +45,7 @@ static BOOL isPlaying = false;
     {
         return @"";
     }
-    return scriptBundlePath;
+    return get_rootless_path(scriptBundlePath);
 }
 
 - (void)setPath:(NSString*)path {
@@ -42,7 +54,7 @@ static BOOL isPlaying = false;
         NSLog(@"com.zjx.springboard: cannot change script path because a script is playing.");
         return;
     }
-    scriptBundlePath = path;
+    scriptBundlePath = get_rootless_path(path);
 }
 
 - (void)setRepeatTime:(int)rt {
@@ -95,7 +107,7 @@ static BOOL isPlaying = false;
     self = [super init];
     if (self)
     {
-        scriptBundlePath = path;
+        scriptBundlePath = get_rootless_path(path);
         currentScriptType = -1;
     }
     return self;
@@ -118,7 +130,7 @@ static BOOL isPlaying = false;
     }
 
     // read info.plist into dictionary
-    NSString *infoFilePath = [NSString stringWithFormat:@"%@/info.plist", scriptBundlePath];
+    NSString *infoFilePath = get_rootless_path([NSString stringWithFormat:@"%@/info.plist", scriptBundlePath]);
     if (![[NSFileManager defaultManager] fileExistsAtPath:infoFilePath isDirectory:&isDir])
     {
         NSLog(@"com.zjx.springboard: Unable to run the script. Info.plist not found.");
@@ -149,7 +161,7 @@ static BOOL isPlaying = false;
         [_playIndicator addSubview:circleView];
     });
 
-    NSString *entryFilePath = [scriptBundlePath stringByAppendingPathComponent:entryFileName];
+    NSString *entryFilePath = get_rootless_path([scriptBundlePath stringByAppendingPathComponent:entryFileName]);
     NSLog(@"com.zjx.sprinboard: currently playing: %@. Repeat time: %d", entryFilePath, repeatTime);
     
 
@@ -242,6 +254,7 @@ static BOOL isPlaying = false;
 -(void) playFromPythonFile:(NSString*) filePath foregroundApp:(NSString*) foregroundApp err:(NSError**) err
 {
     isPlaying = true;
+    filePath = get_rootless_path(filePath);
 
     if (switchAppBeforePlaying)
     {
