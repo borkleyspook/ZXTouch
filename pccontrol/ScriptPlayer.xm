@@ -280,9 +280,24 @@ static BOOL isPlaying = false;
 
     // here I made it run in background because of a weird thing: ios objc cannot call second system() if the first system() does not return
     //scriptPlayForceStop = true;
-    system2([commandToRun UTF8String], NULL, NULL);
-    // add force stop
-    [self playHasStopped];
+    // Inside your GUI App logic
+    NSTask *task = [[NSTask alloc] init];
+    [task setLaunchPath:get_rootless_path(@"/bin/sh")];
+    [task setArguments:@[@"-c", commandToRun]];
+
+    // DO NOT call [task waitUntilExit] if you want it in the background
+    [task launch]; 
+
+    // Instead of calling [self playHasStopped] immediately, 
+    // use a completion block or a timer to check if the task is still running.
+    // This block triggers ONLY when the script actually finishes
+    [task setTerminationHandler:^(NSTask *t) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Ensure UI-related updates happen on the main thread
+            [weakSelf playHasStopped];
+            NSLog(@"com.zjx.zxtouch: Script execution finished with status: %d", [t terminationStatus]);
+        });
+    }];
 }
 
 - (void)replay:(NSTimer*)nstimer {
