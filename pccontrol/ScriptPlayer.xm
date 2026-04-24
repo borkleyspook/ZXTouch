@@ -280,6 +280,10 @@ static BOOL isPlaying = false;
 
     // here I made it run in background because of a weird thing: ios objc cannot call second system() if the first system() does not return
     //scriptPlayForceStop = true;
+
+    // Record the exact start time
+    NSDate *startDate = [NSDate date]; 
+
     // Inside your GUI App logic
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:get_rootless_path(@"/bin/sh")];
@@ -290,12 +294,16 @@ static BOOL isPlaying = false;
 
     // Instead of calling [self playHasStopped] immediately, 
     // use a completion block or a timer to check if the task is still running.
+
     // This block triggers ONLY when the script actually finishes
     [task setTerminationHandler:^(NSTask *t) {
+        // Calculate the time difference immediately
+        NSTimeInterval duration = [[NSDate date] timeIntervalSinceDate:startDate];
         dispatch_async(dispatch_get_main_queue(), ^{
             // Ensure UI-related updates happen on the main thread
             [weakSelf playHasStopped];
             NSLog(@"com.zjx.zxtouch: Script execution finished with status: %d", [t terminationStatus]);
+            NSLog(@"com.zjx.zxtouch: Task detected as finished in %.2f seconds", duration);
         });
     }];
 }
