@@ -2,15 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>platform-application</key>
-	<true/>
-	<key>com.apple.private.skip-library-validation</key>
-	<true/>
-	<key>com.apple.private.security.no-container</key>
-	<true/>
-	<key>com.apple.security.iokit-user-client-class</key>
-	<array>
-		<string>IOUserClient</string>
-	</array>
+    <key>platform-application</key>
+    <true/>
+    <key>com.apple.private.skip-library-validation</key>
+    <true/>
+    <key>com.apple.private.security.no-container</key>
+    <true/>
+    <!-- ADD THESE FOR CLIPBOARD SUPPORT -->
+    <key>com.apple.private.pasteboard.set-data</key>
+    <true/>
+    <key>com.apple.private.pasteboard.get-data</key>
+    <true/>
 </dict>
 </plist>

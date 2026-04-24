@@ -9,6 +9,7 @@ pccontrol_FILES = Tweak.xm SocketServer.xm Touch.xm Screen.xm Task.xm Process.xm
 pccontrol_CFLAGS = -Wno-error -Wno-module-import-in-extern-c -fobjc-arc
 pccontrol_FRAMEWORKS = UIKit AssetsLibrary AVFoundation CoreMedia CoreVideo IOSurface
 pccontrol_CCFLAGS = -std=c++11
+pccontrol_CODESIGN_FLAGS = -S$(THEOS_PROJECT_DIR)/entitlements.rootless.xml
 
 pccontrol_CFLAGS += -F$(THEOS_PROJECT_DIR)/frameworks
 pccontrol_LDFLAGS += -F$(THEOS_PROJECT_DIR)/frameworks
