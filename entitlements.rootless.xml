@@ -8,7 +8,6 @@
     <true/>
     <key>com.apple.private.security.no-container</key>
     <true/>
-    <!-- ADD THESE FOR CLIPBOARD SUPPORT -->
     <key>com.apple.private.pasteboard.set-data</key>
     <true/>
     <key>com.apple.private.pasteboard.get-data</key>
