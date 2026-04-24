@@ -98,6 +98,12 @@
                 // AND it has a valid target (inputDelegate)
                 if (active && [active isEqual:self]) {
                     if ([self respondsToSelector:@selector(inputDelegate)] && self.inputDelegate != nil) {
+                        // 3. Clear any existing "marked text" (autocorrect highlights) 
+                        // to prevent the text engine from getting confused
+                        if ([self hasMarkedText]) {
+                            [self unmarkText];
+                        }
+                        
                         [self insertText:textToInsert];
                         NSLog(@"com.zjx.appdelegate: Successfully inserted text: %@", textToInsert);
                     }
