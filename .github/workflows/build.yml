@@ -46,6 +46,46 @@ jobs:
         echo "=== Testing ldid ==="
         echo "test" > /tmp/testfile
         ldid -Sentitlements.rootless.xml /tmp/testfile 2>&1 || echo "ldid test failed"
+        echo "=== ldid info ==="
+        which ldid
+        ldid --version 2>&1 || echo "No version flag"
+        file $(which ldid)
+        echo "=== System info ==="
+        uname -m
+        sw_vers
+        echo "=== Testing ldid 2.1.5_1 with rootless entitlements ==="
+        # Check ldid version
+        ldid --version 2>&1 || echo "No version flag"
+        echo "ldid location: $(which ldid)"
+        # Test with YOUR EXACT entitlements file
+        echo "test" > /tmp/testfile
+        echo "=== Attempting to sign with entitlements.rootless.xml ==="
+        if ldid -Sentitlements.rootless.xml /tmp/testfile 2>&1; then
+            echo "✓ SUCCESS: ldid signed with rootless entitlements"
+            
+            # Verify the entitlements were applied
+            echo "=== Verifying signed entitlements ==="
+            ldid -e /tmp/testfile 2>&1
+        else
+            echo "✗ FAILED: ldid still broken"
+            
+            # Try the direct approach - use codesign instead
+            echo "=== Falling back to codesign ==="
+            
+            # Create a copy with proper extension for codesign
+            cp /tmp/testfile /tmp/testfile.bin
+            
+            # Sign with codesign using your entitlements
+            codesign -f -s - --entitlements entitlements.rootless.xml /tmp/testfile.bin 2>&1
+            
+            if [ $? -eq 0 ]; then
+                echo "✓ SUCCESS: codesign worked as fallback"
+                echo "=== Extracting codesign entitlements ==="
+                codesign -d --entitlements - /tmp/testfile.bin 2>&1
+            else
+                echo "✗ codesign also failed"
+            fi
+        fi
 
     - name: Cache OpenCV
       uses: actions/cache@v3
