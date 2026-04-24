@@ -1,7 +1,7 @@
 name: build 
 on:
   push:
-    branches: [master, rootless, rootless-python]
+    branches: [master, rootless, rootless-python, keyboard-test]
     
 jobs:
   build:
