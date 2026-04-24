@@ -5,9 +5,9 @@ TARGET = iphone:clang:latest:15.0
 # Add to your Makefile
 DEBUG = 1
 STRIP = 0
-TARGET_CODESIGN = ldid
+TARGET_CODESIGN = codesign
 # Set default signing flags
-TARGET_CODESIGN_FLAGS = -S
+TARGET_CODESIGN_FLAGS = -f -s - --entitlements
 # common.mk
 export ROOT_PATH_NS = /var/jb
 export TARGET_CFLAGS += -DROOT_PATH_NS='@"$(ROOT_PATH_NS)"' -fobjc-arc
