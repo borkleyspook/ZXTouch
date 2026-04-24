@@ -89,10 +89,19 @@
         if (taskId == INSERT_TEXT)
         {
             // Sanitize the input to ensure it's a string
-            NSString *text = [NSString stringWithFormat:@"%@", data[@"task_content"]];
+            NSString *textToInsert = [NSString stringWithFormat:@"%@", data[@"task_content"]];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self insertText:text];
-                NSLog(@"com.zjx.appdelegate: insert text: %@", text);
+                // 2. Perform the 'Active' check ONLY on the main thread
+                UIKeyboardImpl *active = [%c(UIKeyboardImpl) activeInstance];
+                
+                // 3. Only insert if THIS instance is the one the user is seeing
+                // AND it has a valid target (inputDelegate)
+                if (active && [active isEqual:self]) {
+                    if ([self respondsToSelector:@selector(inputDelegate)] && self.inputDelegate != nil) {
+                        [self insertText:textToInsert];
+                        NSLog(@"com.zjx.appdelegate: Successfully inserted text: %@", textToInsert);
+                    }
+                }
             });
         }
         else if (taskId == VIRTUAL_KEYBOARD)
