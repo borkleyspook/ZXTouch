@@ -284,7 +284,7 @@ static BOOL isPlaying = false;
     //scriptPlayForceStop = true;
 
     // Record the exact start time
-    __weak typeof(self) weakSelf = self;
+    __weak __typeof__(self) weakSelf = self;
     NSDate *startDate = [NSDate date]; 
 
     // Inside your GUI App logic
