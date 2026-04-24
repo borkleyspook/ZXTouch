@@ -7,6 +7,8 @@
 #include "Config.h"
 #include "Common.h"
 #import <rootless.h>
+#import <Foundation/Foundation.h>
+#include "NSTask.h"
 
 static BOOL isPlaying = false;
 
