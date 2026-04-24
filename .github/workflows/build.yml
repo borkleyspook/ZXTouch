@@ -19,6 +19,7 @@ jobs:
         brew install ldid xz make dpkg
         # Add GNU Make to PATH (takes precedence over system make)
         echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
+        chmod +x ldid-wrapper.sh
         
     - name: Set up Theos
       run: |
