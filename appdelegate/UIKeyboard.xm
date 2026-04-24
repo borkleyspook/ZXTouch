@@ -77,15 +77,22 @@
 
     %new
     - (void)handleKeyboardNotification:(NSNotification *)notification {
+        // CRITICAL: Only the active keyboard should process text input
+        if (![[%c(UIKeyboardImpl) activeInstance] isEqual:self]) {
+            return;
+        }
+
         //NSLog(@"com.zjx.appdelegate: keyboard related notification received. %@", notification);
         NSDictionary *data = (NSDictionary*)notification.userInfo;
 
         int taskId = [data[@"task_id"] intValue];
         if (taskId == INSERT_TEXT)
         {
+            // Sanitize the input to ensure it's a string
+            NSString *text = [NSString stringWithFormat:@"%@", data[@"task_content"]];
             dispatch_async(dispatch_get_main_queue(), ^{
-                [self insertText:data[@"task_content"]];
-                NSLog(@"com.zjx.appdelegate: insert text: %@", data[@"task_content"]);
+                [self insertText:text];
+                NSLog(@"com.zjx.appdelegate: insert text: %@", text);
             });
         }
         else if (taskId == VIRTUAL_KEYBOARD)
@@ -109,8 +116,10 @@
         else if (taskId == MOVE_CURSOR)
         {
             long long moveAmount = [data[@"task_content"] longLongValue];
-            [self moveCursorByAmount:moveAmount];
-            NSLog(@"com.zjx.appdelegate: move cursor by amount: %lld", moveAmount);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self moveCursorByAmount:moveAmount];
+                NSLog(@"com.zjx.appdelegate: move cursor by amount: %lld", moveAmount);
+            });
         }
         else if (taskId == DELETE_CHARACTER) {
             int numOfCharacterToDel = [data[@"task_content"] intValue];
