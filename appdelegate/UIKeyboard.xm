@@ -39,6 +39,7 @@
     - (void)clearSelection;
     - (void)setInputPoint:(struct CGPoint)arg1;
     - (_Bool)hasMarkedText;
+    - (void)addInputString:(NSString *)string withFlags:(NSUInteger)flags withInputManagerHint:(id)hint;
 
      @property (readonly, assign, nonatomic) UIResponder <UITextInput> *inputDelegate;
 @end
@@ -104,7 +105,9 @@
                             [self unmarkText];
                         }
                         
-                        [self insertText:textToInsert];
+                        // Use the more compatible addInputString API
+                        [self addInputString:textToInsert withFlags:0 withInputManagerHint:nil];
+                        
                         NSLog(@"com.zjx.appdelegate: Successfully inserted text: %@", textToInsert);
                     }
                 }
