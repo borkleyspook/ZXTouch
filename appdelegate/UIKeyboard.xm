@@ -147,8 +147,12 @@
         }
         else if (taskId == PASTE_FROM_CLIPBOARD)
         {
-            UIPasteboard *pb = [UIPasteboard generalPasteboard];
-            [self insertText:[pb string]];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                UIPasteboard *pb = [UIPasteboard generalPasteboard];
+                if (pb.string) {
+                    [self insertText:pb.string];
+                }
+            });
         }
     }
 
