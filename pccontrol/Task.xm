@@ -235,15 +235,26 @@ void processTask(UInt8 *buff, CFWriteStreamRef writeStreamRef)
     }
     else if (taskType == TASK_TEXT_INPUT)
     {
-        // Parse the first byte as subtask ID
-        int subTaskId = eventData[0] - '0';
-        NSString *text = [NSString stringWithFormat:@"%s", eventData + 1];
-        
+        // Parse subtask ID – the first component before ";;"
+        NSString *rawStr = [NSString stringWithUTF8String:(char*)eventData];
+        NSArray *dataParts = [rawStr componentsSeparatedByString:@";;"];
+        if (dataParts.count == 0) {
+            notifyClient((UInt8*)"-1;;No subtask ID\r\n", writeStreamRef);
+            return;
+        }
+        int subTaskId = [dataParts[0] intValue];
+
+        // Handle clipboard save directly – it doesn't need the keyboard tweak
         if (subTaskId == 7) {   // KEYBOARD_SAVE_TEXT_TO_CLIPBOARD
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                [UIPasteboard generalPasteboard].string = text;
-            });
-            notifyClient((UInt8*)"0\r\n", writeStreamRef);
+            if (dataParts.count < 2) {
+                notifyClient((UInt8*)"-1;;No text provided for clipboard\r\n", writeStreamRef);
+            } else {
+                NSString *text = dataParts[1];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [UIPasteboard generalPasteboard].string = text;
+                });
+                notifyClient((UInt8*)"0\r\n", writeStreamRef);   // success immediately
+            }
         } else {
             // Original code
             @autoreleasepool {
