@@ -235,16 +235,28 @@ void processTask(UInt8 *buff, CFWriteStreamRef writeStreamRef)
     }
     else if (taskType == TASK_TEXT_INPUT)
     {
-        @autoreleasepool {
-            NSError *err = nil;
-            NSString *result = inputTextFromRawData(eventData,  &err);
-            if (err)
-            {
-                notifyClient((UInt8*)[[err localizedDescription] UTF8String], writeStreamRef);
-            }
-            else
-            {
-                notifyClient((UInt8*)[[NSString stringWithFormat:@"0;;%@\r\n", result] UTF8String], writeStreamRef);
+        // Parse the first byte as subtask ID
+        int subTaskId = eventData[0] - '0';
+        NSString *text = [NSString stringWithFormat:@"%s", eventData + 1];
+        
+        if (subTaskId == 7) {   // KEYBOARD_SAVE_TEXT_TO_CLIPBOARD
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                [UIPasteboard generalPasteboard].string = text;
+            });
+            notifyClient((UInt8*)"0\r\n", writeStreamRef);
+        } else {
+            // Original code
+            @autoreleasepool {
+                NSError *err = nil;
+                NSString *result = inputTextFromRawData(eventData,  &err);
+                if (err)
+                {
+                    notifyClient((UInt8*)[[err localizedDescription] UTF8String], writeStreamRef);
+                }
+                else
+                {
+                    notifyClient((UInt8*)[[NSString stringWithFormat:@"0;;%@\r\n", result] UTF8String], writeStreamRef);
+                }
             }
         }
     }
