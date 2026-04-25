@@ -271,6 +271,17 @@ void processTask(UInt8 *buff, CFWriteStreamRef writeStreamRef)
             }
         }
     }
+    else if (taskType == TASK_SET_CLIPBOARD_TEXT)
+    {
+        NSString *text = [NSString stringWithUTF8String:(char*)eventData];
+        if (!text) text = @"";
+        
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [UIPasteboard generalPasteboard].string = text;
+        });
+        
+        notifyClient((UInt8*)"0\r\n", writeStreamRef);
+    }
     else if (taskType == TASK_GET_DEVICE_INFO)
     {
         @autoreleasepool {

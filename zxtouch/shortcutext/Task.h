@@ -28,6 +28,7 @@
 #define TASK_TOUCH_INDICATOR 26
 #define TASK_TEXT_RECOGNIZER 27
 #define TASK_COLOR_SEARCHER 28
+#define TASK_SET_CLIPBOARD_TEXT 29
 
 
 #endif /* Task_h */
