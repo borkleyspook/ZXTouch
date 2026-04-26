@@ -30,4 +30,18 @@ device.show_toast(TOAST_WARNING, "Delete 3 characters...", 1.5)
 device.insert_text("\b\b\b")
 time.sleep(1.5)
 
+device.show_toast(TOAST_WARNING, "Setting clipboard content to test...", 1.5)
+text = device.set_clipboard_text("This content is saved by zxtouch script")
+time.sleep(1.5)
+
+device.show_toast(TOAST_WARNING, "Getting clipboard content...", 1.5)
+time.sleep(1.5)
+text = device.get_text_from_clipboard()[1]
+device.show_toast(TOAST_SUCCESS, "content: " + text, 1.5)
+time.sleep(1.5)
+
+device.show_toast(TOAST_WARNING, "Pasting clipboard content...", 1.5)
+time.sleep(1.5)
+text = device.paste_from_clipboard()
+
 device.disconnect()
