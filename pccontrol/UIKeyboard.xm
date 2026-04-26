@@ -33,7 +33,7 @@ NSString* inputTextFromRawData(UInt8 *eventData, NSError **error)
         }
         
         // Fix: perform UIPasteboard access on the main thread
-        dispatch_sync(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
             UIPasteboard *pb = [UIPasteboard generalPasteboard];
             pb.string = data[1];
         });
