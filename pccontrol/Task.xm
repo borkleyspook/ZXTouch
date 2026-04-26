@@ -276,7 +276,7 @@ void processTask(UInt8 *buff, CFWriteStreamRef writeStreamRef)
         NSString *text = [NSString stringWithUTF8String:(char*)eventData];
         if (!text) text = @"";
         
-        dispatch_sync(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
             [UIPasteboard generalPasteboard].string = text;
         });
         
