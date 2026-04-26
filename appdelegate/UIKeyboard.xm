@@ -150,8 +150,30 @@
         }
         else if (taskId == PASTE_FROM_CLIPBOARD)
         {
-            UIPasteboard *pb = [UIPasteboard generalPasteboard];
-            [self insertText:[pb string]];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // 1. Ensure this is the visible keyboard
+                UIKeyboardImpl *active = [%c(UIKeyboardImpl) activeInstance];
+                if (!active || ![active isEqual:self]) return;
+                if (![self respondsToSelector:@selector(inputDelegate)] || !self.inputDelegate) return;
+                
+                if (active && [active isEqual:self]) {
+                    // 2. Ensure it has a valid text field (inputDelegate)
+                    if ([self respondsToSelector:@selector(inputDelegate)] && self.inputDelegate != nil) {
+                        UIPasteboard *pb = [UIPasteboard generalPasteboard];
+                        NSString *textToPaste = pb.string;
+                        if (textToPaste.length == 0) return;
+                        
+                        // Clear marked text before pasting
+                        if ([self hasMarkedText]) {
+                            [self unmarkText];
+                        }
+                        
+                        // Use the same safe insertion method as regular typing
+                        [self addInputString:textToPaste withFlags:0 withInputManagerHint:nil];
+                        NSLog(@"com.zjx.appdelegate: Successfully pasted from clipboard.");
+                    }
+                }
+            });
         }
     }
 
