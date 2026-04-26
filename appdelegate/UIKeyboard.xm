@@ -13,6 +13,7 @@
 #define MOVE_CURSOR 3
 #define DELETE_CHARACTER 4
 #define PASTE_FROM_CLIPBOARD 5
+#define SET_CLIPBOARD 6
 
 #define TEST 99
 
@@ -155,6 +156,14 @@
                 if (pb.string) {
                     [self insertText:pb.string];
                 }
+            });
+        }
+        else if (taskId == SET_CLIPBOARD) {
+            NSString *newContent = [NSString stringWithFormat:@"%@", data[@"task_content"]];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // The tweak is inside an app (like Notes), so it HAS pasteboard access
+                [[UIPasteboard generalPasteboard] setString:newContent];
+                NSLog(@"com.zjx.appdelegate: Clipboard set to: %@", newContent);
             });
         }
     }
