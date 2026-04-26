@@ -275,9 +275,12 @@ void processTask(UInt8 *buff, CFWriteStreamRef writeStreamRef)
     {
         NSString *text = [NSString stringWithUTF8String:(char*)eventData];
         if (!text) text = @"";
-        
+        NSLog(@"### ZXTouch: TASK_SET_CLIPBOARD_TEXT received");
+        NSLog(@"### ZXTouch: text = %@", text);
         [UIPasteboard generalPasteboard].string = text;
+        NSLog(@"### ZXTouch: clipboard set, replying");
         notifyClient((UInt8*)"0\r\n", writeStreamRef);
+        NSLog(@"### ZXTouch: reply sent");
     }
     else if (taskType == TASK_GET_DEVICE_INFO)
     {
