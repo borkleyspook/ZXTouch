@@ -50,7 +50,7 @@ jobs:
         # Test ldid manually
         echo "=== Testing ldid ==="
         echo "test" > /tmp/testfile
-        ldid -Sentitlements.rootless.xml /tmp/testfile 2>&1 || echo "ldid test failed"
+        ldid -S$(pwd)/entitlements.rootless.xml /tmp/testfile 2>&1 || echo "ldid test failed"
 
     - name: Cache OpenCV
       uses: actions/cache@v3
@@ -107,26 +107,24 @@ jobs:
     - name: Build Package
       id: build_package
       run: |
-
-    - name: Build ZXTouch and manually sign
-      run: |
         make clean
-        make all
-        # Manually sign every binary with ldid2
-        find .theos/obj -type f -name "zxtouchb" -exec ldid -S$(pwd)/entitlements.rootless.xml {} \;
-        find .theos/obj -type f -name "pccontrol.dylib" -exec ldid -S$(pwd)/entitlements.rootless.xml {} \;
-        find .theos/obj -type f -name "appdelegate.dylib" -exec ldid -S$(pwd)/entitlements.rootless.xml {} \;
-        # Now package (without cleaning)
         make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
-        # Verify the .deb right away
-        mkdir -p /tmp/deb-check
-        dpkg-deb -x packages/*.deb /tmp/deb-check || (echo "dpkg-deb failed"; exit 1)
-        echo "=== Checking zxtouchb ==="
-        ldid -e /tmp/deb-check/var/jb/usr/bin/zxtouchb
-        echo "=== Checking pccontrol ==="
-        ldid -e /tmp/deb-check/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
-        echo "::set-output name=package::$(ls -t packages | head -n1)"
-
+        # Extract the new .deb
+        mkdir -p /tmp/deb-root
+        dpkg-deb -x packages/*.deb /tmp/deb-root
+        dpkg-deb -e packages/*.deb /tmp/deb-root/DEBIAN
+        # Sign EVERY Mach-O binary inside the package data
+        find /tmp/deb-root -type f | while read file; do
+          if file "$file" | grep -q Mach-O; then
+            echo "Signing: $file"
+            ldid -S$(pwd)/entitlements.rootless.xml "$file"
+          fi
+        done
+        # Repack the .deb with the same name
+        rm packages/*.deb
+        dpkg-deb -b /tmp/deb-root packages/com.zjx.ioscontrol_0.0.8+debug_iphoneos-arm64.deb
+        echo "::set-output name=package::com.zjx.ioscontrol_0.0.8+debug_iphoneos-arm64.deb"
+        
     # - name: Verify Binaries and Theos Signing Configuration
     #   run: |
     #     echo "=== Theos Signing Configuration ==="
