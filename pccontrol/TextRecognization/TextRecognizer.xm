@@ -69,39 +69,42 @@ NSString* performTextRecognizerTextFromRawData(UInt8* eventData, NSError** error
         // parse languages part
         NSArray *languages = [languagesData componentsSeparatedByString:@",,"];
 
-        // screen shot
-        CGImageRef screenshot = [Screen createScreenShotCGImageRef];
+        __block NSString* result = nil;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            // screen shot
+            CGImageRef screenshot = [Screen createScreenShotCGImageRef];
 
-        int orientation = [Screen getScreenOrientation];
+            int orientation = [Screen getScreenOrientation];
 
-        // init
-        VKOcrManager* ocrManager = [[VKOcrManager alloc] initWithCGImage:screenshot area:recognizeRect orientation:orientation];
+            // init
+            VKOcrManager* ocrManager = [[VKOcrManager alloc] initWithCGImage:screenshot area:recognizeRect orientation:orientation];
 
-        // set properties
-        if ([customWords count] > 1 || ![customWords[0] isEqualToString:@""])
-        {
-            NSLog(@"com.zjx.springboard: custom words set. Count: %d", [customWords count]);
-            [ocrManager setCustomWords:customWords];
-        }
-        [ocrManager setMinimumHeight:minimumHeight];
-        [ocrManager setRecognitionLevel:level];
-        if ([languages count] > 1 || ![languages[0] isEqualToString:@""])
-        {
-            NSLog(@"com.zjx.springboard: languages set.");
-            [ocrManager setLanguages:languages];
-        }
-        [ocrManager setCorrection:correct];
+            // set properties
+            if ([customWords count] > 1 || ![customWords[0] isEqualToString:@""])
+            {
+                NSLog(@"com.zjx.springboard: custom words set. Count: %d", [customWords count]);
+                [ocrManager setCustomWords:customWords];
+            }
+            [ocrManager setMinimumHeight:minimumHeight];
+            [ocrManager setRecognitionLevel:level];
+            if ([languages count] > 1 || ![languages[0] isEqualToString:@""])
+            {
+                NSLog(@"com.zjx.springboard: languages set.");
+                [ocrManager setLanguages:languages];
+            }
+            [ocrManager setCorrection:correct];
 
-        NSString* result = [ocrManager recognize:error];
+            result = [ocrManager recognize:error];
 
-        if (debugPath && ![debugPath isEqualToString:@""])
-        {
-            [ocrManager outputDebugImage:debugPath error:error];
-        }
+            if (debugPath && ![debugPath isEqualToString:@""])
+            {
+                [ocrManager outputDebugImage:debugPath error:error];
+            }
 
-        CFRelease(screenshot);
-        
-        return result;
+            CFRelease(screenshot);
+        });
+
+		return result;
     }
     else if (task == TASK_GET_SUPPORTED_LANGUAGE_LIST)
     {
