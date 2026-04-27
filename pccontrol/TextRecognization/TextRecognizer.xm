@@ -69,9 +69,6 @@ NSString* performTextRecognizerTextFromRawData(UInt8* eventData, NSError** error
         // parse languages part
         NSArray *languages = [languagesData componentsSeparatedByString:@",,"];
 
-        __block CGImageRef screenshot = NULL;
-        __block int orientation = 0;
-
         // 1. Capture screenshot only on the main thread (this is fast)
         UIImage *shotImage = [Screen screenShotUIImage];
         CGImageRef screenshot = CGImageRetain([shotImage CGImage]);
