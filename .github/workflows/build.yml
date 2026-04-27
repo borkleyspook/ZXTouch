@@ -21,8 +21,9 @@ jobs:
         echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
         # Homebrew on Apple Silicon is at /opt/homebrew/bin
         echo "/opt/homebrew/bin" >> $GITHUB_PATH
-        # Verify ldid is accessible
-        ldid --version
+        # Verify ldid is present (not its version)
+        which ldid
+        ls -l $(which ldid)
     
     - name: Set up Theos
       run: |
