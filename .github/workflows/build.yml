@@ -19,7 +19,11 @@ jobs:
         brew install ldid xz make dpkg
         # Add GNU Make to PATH (takes precedence over system make)
         echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
-        
+        # Homebrew on Apple Silicon is at /opt/homebrew/bin
+        echo "/opt/homebrew/bin" >> $GITHUB_PATH
+        # Verify ldid is accessible
+        ldid --version
+    
     - name: Set up Theos
       run: |
         export THEOS=~/theos
@@ -108,18 +112,18 @@ jobs:
         make clean
         make all
         # Manually sign every binary with ldid2
-        find .theos/obj -type f -name "zxtouchb" -exec /usr/local/bin/ldid -S$(pwd)/entitlements.rootless.xml {} \;
-        find .theos/obj -type f -name "pccontrol.dylib" -exec /usr/local/bin/ldid -S$(pwd)/entitlements.rootless.xml {} \;
-        find .theos/obj -type f -name "appdelegate.dylib" -exec /usr/local/bin/ldid -S$(pwd)/entitlements.rootless.xml {} \;
+        find .theos/obj -type f -name "zxtouchb" -exec ldid -S$(pwd)/entitlements.rootless.xml {} \;
+        find .theos/obj -type f -name "pccontrol.dylib" -exec ldid -S$(pwd)/entitlements.rootless.xml {} \;
+        find .theos/obj -type f -name "appdelegate.dylib" -exec ldid -S$(pwd)/entitlements.rootless.xml {} \;
         # Now package (without cleaning)
         make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
         # Verify the .deb right away
         mkdir -p /tmp/deb-check
         dpkg-deb -x packages/*.deb /tmp/deb-check || (echo "dpkg-deb failed"; exit 1)
         echo "=== Checking zxtouchb ==="
-        /usr/local/bin/ldid -e /tmp/deb-check/var/jb/usr/bin/zxtouchb
+        ldid -e /tmp/deb-check/var/jb/usr/bin/zxtouchb
         echo "=== Checking pccontrol ==="
-        /usr/local/bin/ldid -e /tmp/deb-check/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
+        ldid -e /tmp/deb-check/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
         echo "::set-output name=package::$(ls -t packages | head -n1)"
 
     # - name: Verify Binaries and Theos Signing Configuration
@@ -145,6 +149,15 @@ jobs:
         echo ""
         echo "File details:"
         file packages/*
+
+    - name: Verify entitlements in built .deb
+      run: |
+        mkdir -p /tmp/deb-check
+        dpkg-deb -x packages/*.deb /tmp/deb-check
+        echo "=== Checking zxtouchb ==="
+        ldid -e /tmp/deb-check/var/jb/usr/bin/zxtouchb
+        echo "=== Checking pccontrol ==="
+        ldid -e /tmp/deb-check/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
 
     - name: Verify Final Binaries
       run: |
