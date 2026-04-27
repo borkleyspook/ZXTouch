@@ -48,9 +48,10 @@ jobs:
         fi
         
         # Test ldid manually
-        echo "=== Testing ldid ==="
+        echo "=== Testing codesign ==="
         echo "test" > /tmp/testfile
-        ldid -S$(pwd)/entitlements.rootless.xml /tmp/testfile 2>&1 || echo "ldid test failed"
+        codesign --force --sign - --entitlements entitlements.rootless.xml /tmp/testfile 2>&1
+        echo "codesign test passed (exit code $?)"
 
     - name: Cache OpenCV
       uses: actions/cache@v3
@@ -113,11 +114,11 @@ jobs:
         mkdir -p /tmp/deb-root
         dpkg-deb -x packages/*.deb /tmp/deb-root
         dpkg-deb -e packages/*.deb /tmp/deb-root/DEBIAN
-        # Sign EVERY Mach-O binary inside the package data
+        # Sign EVERY Mach-O binary using ad-hoc codesign with entitlements
         find /tmp/deb-root -type f | while read file; do
           if file "$file" | grep -q Mach-O; then
             echo "Signing: $file"
-            ldid -S$(pwd)/entitlements.rootless.xml "$file"
+            codesign --force --sign - --entitlements entitlements.rootless.xml "$file"
           fi
         done
         # Repack the .deb with the same name
@@ -154,9 +155,9 @@ jobs:
         mkdir -p /tmp/deb-check
         dpkg-deb -x packages/*.deb /tmp/deb-check
         echo "=== Checking zxtouchb ==="
-        ldid -e /tmp/deb-check/var/jb/usr/bin/zxtouchb
+        codesign --display --entitlements - /tmp/deb-check/var/jb/usr/bin/zxtouchb
         echo "=== Checking pccontrol ==="
-        ldid -e /tmp/deb-check/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
+        codesign --display --entitlements - /tmp/deb-check/var/jb/Library/MobileSubstrate/DynamicLibraries/pccontrol.dylib
 
     - name: Verify Final Binaries
       run: |
@@ -176,10 +177,10 @@ jobs:
             echo "================================================================================="
             echo "=== Checking: $(basename $binary) ==="
             echo ""
-            echo "Ldid (Entitlements) Check:"
-            ldid -e "$binary"
+            echo "Entitlements (codesign):"
+            codesign --display --entitlements - "$binary"
             echo ""
-            echo "Codesign Check:"
+            echo "Codesign Signature Info:"
             codesign -dv --verbose=4 "$binary"
             echo ""
             echo "Lipo (Architectures) Check:"
