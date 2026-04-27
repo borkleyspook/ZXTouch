@@ -73,10 +73,9 @@ NSString* performTextRecognizerTextFromRawData(UInt8* eventData, NSError** error
         __block int orientation = 0;
 
         // 1. Capture screenshot only on the main thread (this is fast)
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            screenshot = [Screen createScreenShotCGImageRef];
-            orientation = [Screen getScreenOrientation];
-        });
+        UIImage *shotImage = [Screen screenShotUIImage];
+        CGImageRef screenshot = CGImageRetain([shotImage CGImage]);
+        int orientation = [Screen getScreenOrientation];
 
         if (!screenshot) {
             *error = [NSError errorWithDomain:@"com.zjx.zxtouchsp" code:999 userInfo:@{NSLocalizedDescriptionKey:@"-1;;Failed to capture screenshot.\r\n"}];
