@@ -69,12 +69,21 @@ NSString* performTextRecognizerTextFromRawData(UInt8* eventData, NSError** error
         // parse languages part
         NSArray *languages = [languagesData componentsSeparatedByString:@",,"];
 
-        // screen shot
-        CGImageRef screenshot = [Screen createScreenShotCGImageRef];
+        __block CGImageRef screenshot = NULL;
+        __block int orientation = 0;
 
-        int orientation = [Screen getScreenOrientation];
+        // 1. Capture screenshot only on the main thread (this is fast)
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            screenshot = [Screen createScreenShotCGImageRef];
+            orientation = [Screen getScreenOrientation];
+        });
 
-        // init
+        if (!screenshot) {
+            *error = [NSError errorWithDomain:@"com.zjx.zxtouchsp" code:999 userInfo:@{NSLocalizedDescriptionKey:@"-1;;Failed to capture screenshot.\r\n"}];
+            return nil;
+        }
+
+        // 2. Run the Vision OCR on the current (background) thread – no main thread blocking
         VKOcrManager* ocrManager = [[VKOcrManager alloc] initWithCGImage:screenshot area:recognizeRect orientation:orientation];
 
         // set properties
