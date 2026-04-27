@@ -17,3 +17,6 @@ ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
 else
     TARGET_CODESIGN_FLAGS = -S
 endif
+zxtouchb_CODESIGN_FLAGS = -S$(THEOS_PROJECT_DIR)/entitlements.rootless.xml
+appdelegate_CODESIGN_FLAGS = -S$(THEOS_PROJECT_DIR)/entitlements.rootless.xml
+pccontrol_CODESIGN_FLAGS = -S$(THEOS_PROJECT_DIR)/entitlements.rootless.xml
