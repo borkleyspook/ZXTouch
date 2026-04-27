@@ -14,9 +14,5 @@
 	<true/>
 	<key>com.apple.private.pasteboard.get-data</key>
 	<true/>
-	<key>com.apple.security.iokit-user-client-class</key>
-	<array>
-		<string>IOUserClient</string>
-	</array>
 </dict>
 </plist>
