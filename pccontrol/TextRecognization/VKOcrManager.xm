@@ -80,15 +80,27 @@
             errorResult = error;
         }];
 
-        // may cause crash
+        // Set revision based on iOS version
         if (SYSTEM_VERSION_LESS_THAN(@"14.0"))
         {
             request.revision = 1;
         }
-        else
+        else if (SYSTEM_VERSION_LESS_THAN(@"16.0"))
         {
             request.revision = 2;
         }
+        else
+        {
+            // iOS 16+ – use revision 3 for best accuracy/stability
+            request.revision = 3;
+        }
+
+        // Force CPU to avoid Neural Engine crashes in SpringBoard
+        [request setUsesCPUOnly:YES];
+
+        NSLog(@"com.zjx.springboard: OCR init – revision set to %lu", (unsigned long)request.revision);
+        NSLog(@"com.zjx.springboard: OCR init – recognitionLevel = %ld", (long)request.recognitionLevel);
+        NSLog(@"com.zjx.springboard: OCR init – usesCPUOnly = %@", request.usesCPUOnly ? @"YES" : @"NO");
     }
     return self;
 }
@@ -116,16 +128,29 @@ Return the string from a area
     }
     inProgress = true;
 
+    NSLog(@"com.zjx.springboard: OCR recognize – started for area: (%.1f, %.1f, %.1f, %.1f)", 
+          recognizeRect.origin.x, recognizeRect.origin.y, 
+          recognizeRect.size.width, recognizeRect.size.height);
+
     NSError *err = nil;
+
+    NSLog(@"com.zjx.springboard: OCR – about to call performRequests...");
     [requestHandler performRequests:@[request] error:&err];
+    NSLog(@"com.zjx.springboard: OCR – performRequests returned");
 
     if (err)
     {
+        NSLog(@"com.zjx.springboard: OCR – performRequests error: %@", err);
         NSLog(@"com.zjx.springboard: error happened while performing ocr. %@", err);
         *error = [NSError errorWithDomain:@"com.zjx.zxtouchsp" code:999 userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"-1;;Error happened while performing ocr. Error: %@\r\n", err]}];
+        inProgress = false;
         return nil;
     }
     
+    NSLog(@"com.zjx.springboard: OCR – performRequests succeeded");
+    NSLog(@"com.zjx.springboard: OCR – number of recognized text observations: %lu", 
+          (unsigned long)[requestResult.results count]);
+
     NSMutableArray<NSString*>* stringList = [[NSMutableArray alloc] init];
 
     for (VNRecognizedTextObservation* i in requestResult.results)
@@ -147,8 +172,12 @@ Return the string from a area
         [stringList addObject:outputString];
     }
 
+    NSString *result = [stringList componentsJoinedByString:@";;"];
+    NSLog(@"com.zjx.springboard: OCR recognize – finished, result length = %lu", 
+          (unsigned long)[result length]);
+
     inProgress = false;
-    return [stringList componentsJoinedByString:@";;"];
+    return result;
 }
 
 /*
@@ -167,6 +196,7 @@ Return area that contain text
     if (err)
     {
         NSLog(@"com.zjx.springboard: error while outputing debug image.");
+        inProgress = false;
         return;
     }
 
@@ -216,11 +246,11 @@ Return area that contain text
     // begin a graphics context of sufficient size
     UIGraphicsBeginImageContextWithOptions(image.size, NO, 0); // CGSizeMake(imageAbsoluteWidth, imageAbsoluteHeight)
  
-	// draw original image into the context
-	[image drawInRect:wholeImageRect];
+    // draw original image into the context
+    [image drawInRect:wholeImageRect];
  
-	// get the context for CoreGraphics
-	CGContextRef ctx = UIGraphicsGetCurrentContext();
+    // get the context for CoreGraphics
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
  
     // draw match rectangle
     [self drawRectangle:recognizeRect inContext:ctx withColor:[UIColor redColor]];
@@ -271,13 +301,13 @@ Return area that contain text
 
 
  
-	// make image out of bitmap context
-	UIImage *retImage = UIGraphicsGetImageFromCurrentImageContext();
+    // make image out of bitmap context
+    UIImage *retImage = UIGraphicsGetImageFromCurrentImageContext();
  
-	// free the context
-	UIGraphicsEndImageContext();
+    // free the context
+    UIGraphicsEndImageContext();
 
-	return retImage;
+    return retImage;
 }
 
 

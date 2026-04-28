@@ -69,23 +69,27 @@ NSString* performTextRecognizerTextFromRawData(UInt8* eventData, NSError** error
         // parse languages part
         NSArray *languages = [languagesData componentsSeparatedByString:@",,"];
 
-        // 1. Capture screenshot only on the main thread (this is fast)
-        UIImage *shotImage = [Screen screenShotUIImage];
-        CGImageRef screenshot = CGImageRetain([shotImage CGImage]);
-        int orientation = [Screen getScreenOrientation];
+        // screen shot
+        CGImageRef screenshot = [Screen createScreenShotCGImageRef];
 
-        if (!screenshot) {
+        if (screenshot) {
+            NSLog(@"com.zjx.springboard: OCR – screenshot captured, width = %ld, height = %ld", 
+                  CGImageGetWidth(screenshot), CGImageGetHeight(screenshot));
+        } else {
+            NSLog(@"com.zjx.springboard: OCR – screenshot is NULL!");
             *error = [NSError errorWithDomain:@"com.zjx.zxtouchsp" code:999 userInfo:@{NSLocalizedDescriptionKey:@"-1;;Failed to capture screenshot.\r\n"}];
             return nil;
         }
 
-        // 2. Run the Vision OCR on the current (background) thread – no main thread blocking
+        int orientation = [Screen getScreenOrientation];
+
+        // init
         VKOcrManager* ocrManager = [[VKOcrManager alloc] initWithCGImage:screenshot area:recognizeRect orientation:orientation];
 
         // set properties
         if ([customWords count] > 1 || ![customWords[0] isEqualToString:@""])
         {
-            NSLog(@"com.zjx.springboard: custom words set. Count: %d", [customWords count]);
+            NSLog(@"com.zjx.springboard: custom words set. Count: %lu", (unsigned long)[customWords count]);
             [ocrManager setCustomWords:customWords];
         }
         [ocrManager setMinimumHeight:minimumHeight];
@@ -98,6 +102,12 @@ NSString* performTextRecognizerTextFromRawData(UInt8* eventData, NSError** error
         [ocrManager setCorrection:correct];
 
         NSString* result = [ocrManager recognize:error];
+
+        if (*error) {
+            NSLog(@"com.zjx.springboard: OCR – manager recognize error: %@", *error);
+        } else {
+            NSLog(@"com.zjx.springboard: OCR – manager recognize returned successfully");
+        }
 
         if (debugPath && ![debugPath isEqualToString:@""])
         {
